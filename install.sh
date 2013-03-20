@@ -17,19 +17,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 
-# MySQL host, port, user id, password and database.
-# When using the default settings, the script will access
-# a fresh/clean and local installation of a mysql server
-# and create a gwlpr database and its tables.
-# If the password is empty, the script will ask you to enter it
-# later on. (If you dont have one, simply press enter)
-MYSQLHOST="127.0.0.1"
-MYSQLPORT="3306"
-MYSQLUID="root"
-MYSQLPWD=""
-MYSQLDB="testgwlpr"
-
-
 clear
 echo "-----------------------------------------------------------------------------"
 echo "< RealityShard Install >"
@@ -80,7 +67,6 @@ cd "$DIR/Container" && mvn clean install
 echo ""
 
 
-clear
 echo "-----------------------------------------------------------------------------"
 echo "Installation done."
 echo ""
