@@ -68,10 +68,10 @@ echo ""
 
 
 echo "-----------------------------------------------------------------------------"
-echo "Installation done."
+echo "Reality:Shard Installation done."
 echo ""
 echo "If there were any errors during init/update/install of the submodules,"
-echo "please report them on https://github.com/RealityShard/RealityShard."
+echo "please report them on https://github.com/RealityShard/RealityShard ."
 echo ""
 echo "You can now use RealityShard like any other maven dependecy in your project."
 echo "-----------------------------------------------------------------------------"
