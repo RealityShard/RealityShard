@@ -33,6 +33,7 @@ echo "--------------------------------------------------------------------------
 echo ""
 read -p "[Press any key to continue]" -n 1 -s
 echo ""
+echo ""
 
 
 echo "Checking installed tools..."
@@ -60,10 +61,7 @@ echo ""
 echo "Installing the submodules..."
 read -p "[Press any key to continue]" -n 1 -s
 echo ""
-# this needs to be done manually, and in the right order:
-cd "$DIR/Shardlet" && mvn clean install
-cd "$DIR/Network" && mvn clean install
-cd "$DIR/Container" && mvn clean install
+mvn clean install
 echo ""
 
 
