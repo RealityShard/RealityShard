@@ -11,13 +11,7 @@ Reality:Shard is a generic online server that is based on the design of the `jav
 _Also consider the LICENSE document from this repo._
 
 
-**This repository is to store all the most necessary software components of this framework, which are:**
-
- - The common interfaces can be found in the [Shardlet](https://github.com/RealityShard/Shardlet) project.
- - The implementation can be found in the [Container](https://github.com/RealityShard/Container) and [Network](https://github.com/RealityShard/Network) projects.
-
-
-**These are not included here, because they are either tools or non-source-code repositories:**
+**These other repos are not included here, because they are either tools or non-source-code projects:**
 
  - The documentation and other written stuff can be found in the [Documentation](https://github.com/RealityShard/Documentation) project.
  - A production environment application can be found in the [ProductionEnvironment](https://github.com/RealityShard/ProductionEnvironment) project.
@@ -25,5 +19,5 @@ _Also consider the LICENSE document from this repo._
 
 ### Hints and install notes:
  - _Users can install this project by cloning this repo and running `./install.sh`_
- - _If you'r a dev, have a look at the existing guide here:_  [The Developer's Guide](https://github.com/RealityShard/Documentation/blob/master/Dev-HowTo.md)
- - _Check out our glossary, if you'r lost in translation:_ [The Glossary](https://github.com/RealityShard/Documentation/blob/master/Glossary.md)
+ - _If you're a dev, have a look at the existing guide here:_  [The Developer's Guide](https://github.com/RealityShard/Documentation/blob/master/Dev-HowTo.md)
+ - _Check out our glossary, if you're lost in translation:_ [The Glossary](https://github.com/RealityShard/Documentation/blob/master/Glossary.md)
