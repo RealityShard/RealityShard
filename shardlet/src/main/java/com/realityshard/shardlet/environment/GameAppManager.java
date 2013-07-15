@@ -42,5 +42,5 @@ public interface GameAppManager
      *                                      (This should not be called by other
      *                                      game apps...)
      */
-    public void unload(ShardletContext me);
+    public void notifyUnload(ShardletContext me);
 }

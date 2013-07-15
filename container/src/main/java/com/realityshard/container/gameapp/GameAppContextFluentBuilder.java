@@ -7,7 +7,6 @@ package com.realityshard.container.gameapp;
 import com.realityshard.shardlet.environment.GameAppManager;
 import com.realityshard.container.gameapp.GameAppContextBuildDescriptors.Build;
 import com.realityshard.container.gameapp.GameAppContextBuildDescriptors.BuildClassloader;
-import com.realityshard.container.gameapp.GameAppContextBuildDescriptors.BuildDescription;
 import com.realityshard.container.gameapp.GameAppContextBuildDescriptors.BuildEventAggregator;
 import com.realityshard.container.gameapp.GameAppContextBuildDescriptors.BuildIpAddress;
 import com.realityshard.container.gameapp.GameAppContextBuildDescriptors.BuildInitParams;
@@ -39,7 +38,6 @@ public final class GameAppContextFluentBuilder extends GameAppContext implements
         BuildClassloader,
         BuildName,
         BuildIpAddress,
-        BuildDescription,
         BuildPacemaker,
         BuildInitParams,
         BuildShardlets,
@@ -133,23 +131,9 @@ public final class GameAppContextFluentBuilder extends GameAppContext implements
      * @return 
      */
     @Override
-    public BuildDescription useName(String name) 
+    public BuildPacemaker useName(String name) 
     {
         this.name = name;
-        return this;
-    }
-
-    
-    /**
-     * Step.
-     * 
-     * @param       description
-     * @return 
-     */
-    @Override
-    public BuildPacemaker useDescription(String description) 
-    {
-        this.description = description;
         return this;
     }
 

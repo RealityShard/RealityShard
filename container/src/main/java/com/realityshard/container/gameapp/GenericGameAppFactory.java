@@ -121,7 +121,6 @@ public class GenericGameAppFactory implements GameAppFactory
                 .useAggregator(new ConcurrentEventAggregator())
                 .useClassloader(ClassLoader.getSystemClassLoader())
                 .useName(name)
-                .useDescription("Development-Environment GameApp")
                 .useHeartBeat(heartBeat)
                 .useInitParams(initParams, additionalParams)
                 .useIpAddress(ip)

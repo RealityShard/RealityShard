@@ -5,15 +5,16 @@
 package com.realityshard.container;
 
 import com.realityshard.container.gameapp.GameAppContext;
+import com.realityshard.network.LayerEventHandlers;
 import com.realityshard.shardlet.utils.GenericSession;
 import com.realityshard.network.NetworkSession;
 import com.realityshard.shardlet.Action;
 import com.realityshard.shardlet.ProtocolFilter;
 import com.realityshard.shardlet.ShardletContext;
 import com.realityshard.shardlet.TriggerableAction;
+import com.realityshard.shardlet.utils.GenericTriggerableAction;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,9 @@ import org.slf4j.LoggerFactory;
  * 
  * @author _rusty
  */
-public final class GameSession extends GenericSession
+public final class GameSession extends GenericSession implements
+        LayerEventHandlers.NewData,
+        LayerEventHandlers.LostClient
 {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(GameSession.class);
@@ -61,6 +64,44 @@ public final class GameSession extends GenericSession
     
     
     /**
+     * Called by the network layer when we got new data.
+     * 
+     * @param       rawData
+     */
+    @Override
+    public void onNewData(ByteBuffer rawData)
+    {
+        GenericTriggerableAction action = new GenericTriggerableAction();
+        action.init(this);
+        action.setBuffer(rawData);
+
+        try 
+        {
+            // filter it, and delegate it
+            for (TriggerableAction act : protocol.doInFilter(action)) 
+            {
+                context.handleIncomingAction(act);
+            }
+        } 
+        catch (IOException ex) 
+        {
+            LOGGER.error("Protocol failed to handle an action.", ex);
+        }
+    }
+    
+    
+    /**
+     * Called by the network layer when a client disconnects
+     */
+    @Override
+    public void onLostClient() 
+    {
+        // unregister the session with its context
+        context.handleLostClient(this);
+    }
+    
+    
+    /**
      * Send an action to the client associated with this session
      * 
      * @param action 
@@ -77,31 +118,7 @@ public final class GameSession extends GenericSession
             buf.flip();
             
             // then send it.
-            netSession.handlePacket(buf);
-        } 
-        catch (IOException ex) 
-        {
-            LOGGER.error("Protocol failed to handle an action.", ex);
-        }
-    }
-    
-    
-    /**
-     * Handles an new action
-     * 
-     * @param action 
-     */
-    public void receive(TriggerableAction action)
-    {
-        try 
-        {
-            // let the protocol handle the action first
-            List<TriggerableAction> actions = protocol.doInFilter(action);
-            
-            for (TriggerableAction act : actions) 
-            {
-                context.handleIncomingAction(act);
-            }
+            netSession.write(buf);
         } 
         catch (IOException ex) 
         {
@@ -119,17 +136,6 @@ public final class GameSession extends GenericSession
     {
         netSession.disconnect();
     }   
-
-    
-    /**
-     * Getter.
-     * 
-     * @return 
-     */
-    public NetworkSession getNetSession() 
-    {
-        return netSession;
-    }
 
     
     /**

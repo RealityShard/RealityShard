@@ -60,25 +60,9 @@ public interface NetworkLayer
     
     
     /**
-     * Register a listener for the NewPacket event.
-     * 
-     * @param       newPacket               The listener.
-     */
-    public void RegisterOnNewPacket(LayerEventHandlers.NewPacket newPacket);
-    
-    
-    /**
      * Register a listener for the NewClient event.
      * 
      * @param       newClient               The listener.
      */
-    public void RegisterOnNewClient(LayerEventHandlers.NewClient newClient);
-    
-    
-    /**
-     * Register a listener for the LostClient event.
-     * 
-     * @param       lostClient               The listener.
-     */
-    public void RegisterOnLostClient(LayerEventHandlers.LostClient lostClient);
+    public void registerOnNewClient(LayerEventHandlers.NewClient newClient);
 }

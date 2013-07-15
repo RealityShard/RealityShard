@@ -64,11 +64,12 @@ public class MinaClientHandler extends IoHandlerAdapter
     public void messageReceived(IoSession session, Object message)
     {
         ByteBuffer buff = ((IoBuffer) message).buf();
+        MinaSessionAdapter netSession = (MinaSessionAdapter) session.getAttribute("adapter");
         
         buff.order(ByteOrder.LITTLE_ENDIAN);
         
         // inform the application layer
-        netManager.onNewPacket((NetworkSession) session.getAttribute("adapter"), buff);
+        netSession.onNewData(buff);
     }
     
     
@@ -89,6 +90,7 @@ public class MinaClientHandler extends IoHandlerAdapter
         session.setAttribute("adapter", netSession);
         
         InetSocketAddress addr = (InetSocketAddress) session.getRemoteAddress();
+       
         // inform the application layer
         netManager.onNewClient(
                     netSession, 
@@ -108,6 +110,9 @@ public class MinaClientHandler extends IoHandlerAdapter
     {
         LOGGER.debug("Session closed on {}.", protocol);
         
-        netManager.onLostClient((NetworkSession) session.getAttribute("adapter"));
+        MinaSessionAdapter netSession = (MinaSessionAdapter) session.getAttribute("adapter");
+
+        // inform the application layer
+        netSession.onLostClient();
     }
 }

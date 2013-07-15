@@ -10,13 +10,11 @@ import com.realityshard.shardlet.utils.GenericTriggerableAction;
 
 /**
  * This Event is triggered when the ShardletContext of a game-app 
- * has been created successfully, meaning all Shardlets have been initialized.
- * 
- * This may be the right time to distribute any context-global references.
+ * has been unloaded successfully, meaning it is no longer used.
  * 
  * @author _rusty
  */
-public final class GameAppCreatedEvent extends GenericTriggerableAction
+public final class GameAppUnloadedEvent extends GenericTriggerableAction
 {
    
     /**

@@ -19,7 +19,6 @@ public abstract class GenericSession implements Session
     private final int port;
     private final String protocol;
     
-    private volatile EncryptionStates encState = EncryptionStates.UNENCRYPTED;
     private volatile Object attachment;
     
     
@@ -84,30 +83,6 @@ public abstract class GenericSession implements Session
      */
     @Override
     public abstract void invalidate();
-    
-    
-    /**
-     * Set a new encryption state of this session.
-     * 
-     * @param       state                   The new encryption state 
-     */
-    @Override
-    public void setEncryptionState(EncryptionStates state) 
-    {
-        encState = state;
-    }
-    
-    
-    /**
-     * Get the current encryption state of this session.
-     * 
-     * @return      The current encryption state 
-     */
-    @Override
-    public EncryptionStates getEncryptionState() 
-    {
-        return encState;
-    }
     
     
     /**

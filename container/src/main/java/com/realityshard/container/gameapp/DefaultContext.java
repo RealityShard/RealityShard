@@ -109,6 +109,7 @@ public class DefaultContext extends GameAppContext
         for (GameAppContext gameAppContext : contexts) 
         {
             gameAppContext.getAggregator().triggerEvent(new ContainerShutdownEvent());
+            gameAppContext.unload();
         }
     }
     

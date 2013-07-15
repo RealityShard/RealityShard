@@ -4,60 +4,14 @@
 
 package com.realityshard.shardlet;
 
-import java.util.Enumeration;
-import java.util.UUID;
-
 
 /**
- * A <b>persistant</b> user-session that is unique for every connection.
- * 
- * Loosely based on javax.Shardlet.http.HttpSession
- * Thx Oracle!
+ * A persistent user-session that is unique for every connection.
  *
  * @author	_rusty
  */
 public interface Session 
 {
-    
-    public enum EncryptionStates 
-    {
-        /**
-         * Meaning the action is only available as network-packet-bytes
-         */
-        UNENCRYPTED,
-        
-        /**
-         * Meaning the protocol filters should encrypt packets from this session
-         */
-        ENCRYPTED;
-        
-        private Object attachment;
-
-        
-        /**
-         * Stick your data for packet/stream encryption to this
-         * State object.
-         * 
-         * @return      Your data.
-         */
-        public Object getAttachment() 
-        {
-            return attachment;
-        }
-
-        
-        /**
-         * Stick your data for packet/stream encryption to this
-         * State object.
-         * 
-         * @param       attachment              Your data. 
-         */
-        public void setAttachment(Object attachment) 
-        {
-            this.attachment = attachment;
-        }
-    }
-
    
     /**
      * Getter.
@@ -104,28 +58,9 @@ public interface Session
     
 
     /**
-     * Invalidates this session then unbinds any objects bound
-     * to it. 
+     * Invalidates this session then unbinds any objects bound to it. 
      */
     public void invalidate();
-    
-    
-    /**
-     * Setter.
-     * Set a new encryption state of this session.
-     * 
-     * @param       state                   The new encryption state. 
-     */
-    public void setEncryptionState(EncryptionStates state);
-    
-    
-    /**
-     * Getter.
-     * Get the current encryption state of this session.
-     * 
-     * @return       The current encryption state. 
-     */
-    public EncryptionStates getEncryptionState();
     
         
     /**

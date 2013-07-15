@@ -13,9 +13,7 @@ import com.realityshard.shardlet.RemoteShardletContext;
 import com.realityshard.shardlet.ShardletContext;
 import com.realityshard.shardlet.environment.GameAppFactory;
 import com.realityshard.shardlet.environment.ProtocolFactory;
-import com.realityshard.shardlet.utils.GenericTriggerableAction;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,20 +35,17 @@ import org.slf4j.LoggerFactory;
  */
 public final class ContainerFacade implements
         GameAppManager,
-        LayerEventHandlers.NewPacket,
-        LayerEventHandlers.NewClient,
-        LayerEventHandlers.LostClient
+        LayerEventHandlers.NewClient
 {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(ContainerFacade.class);
     
     private final NetworkLayer network;
-    private final Map<NetworkSession, GameSession> sessions;
     
-    private final Map<String, ProtocolChain> protocols;
-    private final Map<String, GameAppFactory> gameApps;
-    
-    private final DefaultContext defaultContext;
+    private final Map<String, ProtocolChain> protocols = new ConcurrentHashMap<>();
+    private final Map<String, GameAppFactory> gameApps = new ConcurrentHashMap<>();
+   
+    private final DefaultContext defaultContext = new DefaultContext();;
     
     
     /**
@@ -67,56 +62,13 @@ public final class ContainerFacade implements
         // the network manager will handle the networking stuff,
         // like sending and recieving data.
         this.network = network;
-        // we need to subscribe to its events though.
-        this.network.RegisterOnNewPacket(this);
-        this.network.RegisterOnNewClient(this);
-        this.network.RegisterOnLostClient(this);
+        this.network.registerOnNewClient(this);
         
-        this.sessions = new ConcurrentHashMap<>();
-        
-        protocols = new ConcurrentHashMap<>();
-        gameApps = new ConcurrentHashMap<>();
-        
-        loadGameApps(env);
         loadProtocols(env);
-        
-        defaultContext = new DefaultContext();
+        loadGameApps(env);
         
         // now start up all start-up apps
         startUpApps();
-    }
-    
-    
-    /**
-     * Just the implementation of the interface.
-     * This will be called by the network manager!
-     * 
-     * @param       netSession 
-     * @param       rawData
-     */
-    @Override
-    public void onNewPacket(NetworkSession netSession, ByteBuffer rawData)
-    {
-        // we could do anything we want with this packet here,
-        // but we don't
-        
-        // basically, what we will be doing though
-        // is create an action, attach a session to it (if we find the session, that is)
-        // and then delegate it to the ContextManager
-        GameSession session = sessions.get(netSession);
-        
-        if (session == null)
-        {
-            LOGGER.error("Got a message from an unkown client! (Its network-session is not registered with the Container)");
-            return;
-        }
-
-        GenericTriggerableAction action = new GenericTriggerableAction();
-        action.init(session);
-        action.setBuffer(rawData);
-
-        // delegate it!
-        session.receive(action);
     }
     
     
@@ -131,39 +83,18 @@ public final class ContainerFacade implements
     @Override
     public void onNewClient(NetworkSession netSession, String protocolName, String IP, int port) 
     {
-        // add the client here,
-        sessions.put(netSession, new GameSession(
+        // create the game session associated with that network client
+        GameSession session = new GameSession(
                 netSession, 
                 defaultContext, 
                 IP, 
                 port, 
                 protocolName,
-                protocols.get(protocolName)));
-    }
-    
-    
-    /**
-     * Called by the network manager when a client disconnects
-     * 
-     * @param       netSession 
-     */
-    @Override
-    public void onLostClient(NetworkSession netSession) 
-    {
-        // temporarily get the session
-        GameSession session = sessions.get(netSession);
+                protocols.get(protocolName));
         
-        if (session == null)
-        {
-            LOGGER.error("An unkown client disconnected! (Its network-session is not registered with the Container)");
-            return;
-        }
-
-        // only to remove it afterwards
-        sessions.remove(netSession);
-
-        // and finally unregister that session with its context
-        ((GameAppContext) session.getShardletContext()).handleLostClient(session);
+        // register for the net client events
+        netSession.registerOnNewData(session);
+        netSession.registerOnLostClient(session);
     }
     
     
@@ -202,18 +133,8 @@ public final class ContainerFacade implements
      * @param       thatGameApp             The game app that will be removed.
      */
     @Override
-    public void unload(ShardletContext thatGameApp)
-    {
-        // first of all, invalidate the game-apps sessions so we dont get spammed
-        // by exceptions later on.
-        for (GameSession gameSession : sessions.values()) 
-        {
-            if (gameSession.getShardletContext() == thatGameApp)
-            {
-                gameSession.invalidate();
-            }
-        }
-        
+    public void notifyUnload(ShardletContext thatGameApp)
+    {       
         // now remove the game app
         defaultContext.removeGameApp(thatGameApp);
     }
@@ -256,22 +177,6 @@ public final class ContainerFacade implements
     
     
     /**
-     * Shutdown this shardlet container. 
-     * (Close all Sessions and trigger a ContainerShutdownEvent in each GAContext)
-     */
-    public void shutdown()
-    {
-        for (GameSession gameSession : sessions.values()) 
-        {
-            // we already have code handling this for us...
-            gameSession.invalidate();
-        }
-        
-        defaultContext.shutdown();
-    }
-    
-    
-    /**
      * Load all apps that have the "start-up" marker
      */
     private void startUpApps()
@@ -289,5 +194,15 @@ public final class ContainerFacade implements
             // dont forget to tell the default context that we have a new app
             defaultContext.addContext(newApp);
         }
+    }
+    
+    
+    /**
+     * Shutdown this shardlet container. 
+     * (Trigger a ContainerShutdownEvent in each GAContext)
+     */
+    public void shutdown()
+    {
+        defaultContext.shutdown();
     }
 }

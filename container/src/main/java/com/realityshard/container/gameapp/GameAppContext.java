@@ -8,6 +8,7 @@ import com.realityshard.shardlet.environment.GameAppManager;
 import com.realityshard.shardlet.utils.GenericContext;
 import com.realityshard.container.Pacemaker;
 import com.realityshard.shardlet.*;
+import com.realityshard.shardlet.events.GameAppUnloadedEvent;
 import com.realityshard.shardlet.events.NetworkClientDisconnectedEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ public class GameAppContext extends GenericContext
     protected Pacemaker pacemaker;
     
     protected List<Shardlet> shardlets;
+    protected List<Session> sessions;
 
     
     /**
@@ -51,6 +53,7 @@ public class GameAppContext extends GenericContext
         // dont forget to create the necessary objects - else we will get
         // strange null pointer errors later
         shardlets = new ArrayList<>();
+        sessions = new ArrayList<>();
     }
         
     
@@ -66,7 +69,7 @@ public class GameAppContext extends GenericContext
         
         
         // ask our verifiers...
-        // the non persistant first
+        // the non persistent first
         for (ClientVerifier shardletActionVerifier : normalClientVerifiers) 
         {
             if (shardletActionVerifier.check(action))
@@ -75,7 +78,7 @@ public class GameAppContext extends GenericContext
                 // lets trigger the appropriate event
                 action.triggerEvent(aggregator);
                 
-                // because the verfier is non persistant, we need to delete it from
+                // because the verfier is non persistent, we need to delete it from
                 // the list after we left the loop ;D
                 acceptedVerifier = shardletActionVerifier;
                 
@@ -93,13 +96,15 @@ public class GameAppContext extends GenericContext
             // we need to delete it from the list
             normalClientVerifiers.remove(acceptedVerifier);
             
+            sessions.add(action.getSession());
+            
             // everything else is already done, so lets end this method
             return true;
         }
         
         
-        // now ask the persistant verifiers
-        for (ClientVerifier shardletActionVerifier : persistantClientVerifiers) 
+        // now ask the persistent verifiers
+        for (ClientVerifier shardletActionVerifier : persistentClientVerifiers) 
         {
             if (shardletActionVerifier.check(action))
             {
@@ -109,6 +114,8 @@ public class GameAppContext extends GenericContext
                 
                 // log it
                 LOGGER.debug("Accepted client");
+                
+                sessions.add(action.getSession());
                 
                 // we dont need to delete the verifier, so we can simply
                 // end this method directly here
@@ -200,6 +207,8 @@ public class GameAppContext extends GenericContext
      */
     public void handleLostClient(Session session)
     {
+        sessions.remove(session);
+        
         aggregator.triggerEvent(new NetworkClientDisconnectedEvent(session));
     }
     
@@ -207,8 +216,16 @@ public class GameAppContext extends GenericContext
     /**
      * Tries to unload/close/shutdown this game-app-context
      */
-    public void tryUnload()
+    @Override
+    public void unload()
     {
-        manager.unload(this);
+        for (Session session : sessions) 
+        {
+            session.invalidate();
+        }
+        
+        handleIncomingAction(new GameAppUnloadedEvent());
+        
+        manager.notifyUnload(this);
     }
 }

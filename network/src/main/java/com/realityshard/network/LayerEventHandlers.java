@@ -14,27 +14,14 @@ import java.nio.ByteBuffer;
  * @author _rusty
  */
 public interface LayerEventHandlers 
-{
-    
-    public interface NewPacket
-    {
-        
-        /**
-         * Handle an incoming packet.
-         * 
-         * @param       session                 The IoSession that this packet was
-         *                                      received on.
-         * @param       buffer                  The Buffer with the data.
-         */
-        public void onNewPacket(NetworkSession session, ByteBuffer buffer);
-    }
-    
+{    
     
     public interface NewClient
     {
         
         /**
-         * Handle a new client
+         * Handle a new client.
+         * This is a protocol (listener socket) specific event.
          * 
          * @param       session                 The new IoSession
          * @param       protocolName            The name of the protocol the client uses
@@ -45,13 +32,25 @@ public interface LayerEventHandlers
     }
     
     
+    public interface NewData
+    {
+        
+        /**
+         * Handle an incoming packet.
+         * This is a session specific event.
+         * 
+         * @param       buffer                  The Buffer with the data.
+         */
+        public void onNewData(ByteBuffer buffer);
+    }
+    
+    
     public interface LostClient
     {
         /**
-         * A client disconnected
-         * 
-         * @param session 
+         * A client disconnected.
+         * This is a session specific event.
          */
-        public void onLostClient(NetworkSession session);
+        public void onLostClient();
     }
 }

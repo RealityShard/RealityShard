@@ -22,13 +22,12 @@ public abstract class GenericContext implements
     protected EventAggregator aggregator;
     protected String name = "";
     protected String ip = "";
-    protected String description;                  // TODO: not accessible from the shardlets... why?
     protected RemoteShardletContext parent;
     protected int heartBeatInterval;
     protected Map<String, String> initParams;
     
     protected List<ClientVerifier> normalClientVerifiers;
-    protected List<ClientVerifier> persistantClientVerifiers;
+    protected List<ClientVerifier> persistentClientVerifiers;
     
     private volatile Object attachment;
     
@@ -39,20 +38,7 @@ public abstract class GenericContext implements
     protected GenericContext()
     {
         normalClientVerifiers = new ArrayList<>();
-        persistantClientVerifiers = new ArrayList<>();
-    }
-    
-    
-    /**
-     * Getter.
-     * 
-     * @return      The server name and version.
-     */
-    @Override
-    public String getServerInfo() 
-    {
-        // TODO: do we need this?
-        return "";//"Server: [" + serverConfig.getServerName() + "] Version: [" + serverConfig.getVersion() + "]";
+        persistentClientVerifiers = new ArrayList<>();
     }
     
     
@@ -108,7 +94,7 @@ public abstract class GenericContext implements
     {
         if (isPersistant)
         {
-            persistantClientVerifiers.add(verifier);
+            persistentClientVerifiers.add(verifier);
         }
         else
         {
@@ -120,16 +106,16 @@ public abstract class GenericContext implements
     /**
      * Clears the client verifiers list.
      * 
-     * @param persistantVerifiersOnly       Determines whether the context should
-     *                                      delete only persistant verifiers.
+     * @param persistentVerifiersOnly       Determines whether the context should
+     *                                      delete only persistent verifiers.
      */
     @Override
-    public void clearClientVerifiers(boolean persistantVerifiersOnly)
+    public void clearClientVerifiers(boolean persistentVerifiersOnly)
     {
         // they will always be cleared:
-        persistantClientVerifiers.clear();
+        persistentClientVerifiers.clear();
         
-        if (!persistantVerifiersOnly)
+        if (!persistentVerifiersOnly)
         {
             // clear them conditionally:
             normalClientVerifiers.clear();
@@ -225,6 +211,17 @@ public abstract class GenericContext implements
     {
         this.attachment = attachment;
     }
+    
+    
+    /**
+     * This may be called by a shardlet if it wants the GameApp to be
+     * unloaded from this R:S instance.
+     * 
+     * CAUTION: Before calling this, make sure that you saved all data,
+     * as every object connected with the game app will get garbage-collected.
+     */
+    @Override
+    public abstract void unload();
     
     
     /**

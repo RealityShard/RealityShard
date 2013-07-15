@@ -5,9 +5,6 @@
 package com.realityshard.network;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -20,11 +17,7 @@ public abstract class GenericNetworkManager
     implements NetworkLayer
 {
     
-    private final static Logger LOGGER = LoggerFactory.getLogger(GenericNetworkManager.class);
-    
-    private LayerEventHandlers.NewPacket newPacket;
     private LayerEventHandlers.NewClient newClient;
-    private LayerEventHandlers.LostClient lostClient;
     
     
     /**
@@ -70,18 +63,6 @@ public abstract class GenericNetworkManager
      */
     @Override
     public abstract void shutdown();
-    
-
-    /**
-     * Register an event handler.
-     * 
-     * @param newPacket 
-     */
-    @Override
-    public void RegisterOnNewPacket(LayerEventHandlers.NewPacket newPacket) 
-    {
-        this.newPacket = newPacket;
-    }
 
     
     /**
@@ -90,32 +71,11 @@ public abstract class GenericNetworkManager
      * @param newClient 
      */
     @Override
-    public void RegisterOnNewClient(LayerEventHandlers.NewClient newClient) 
+    public void registerOnNewClient(LayerEventHandlers.NewClient newClient) 
     {
         this.newClient = newClient;
     }
 
-    
-    /**
-     * Register an event handler.
-     * 
-     * @param lostClient 
-     */
-    @Override
-    public void RegisterOnLostClient(LayerEventHandlers.LostClient lostClient) 
-    {
-        this.lostClient = lostClient;
-    }
-    
-    
-    /**
-     * Convenience for the subclasses.
-     */
-    public void onNewPacket(NetworkSession session, ByteBuffer buffer)
-    {
-        newPacket.onNewPacket(session, buffer);
-    }
-    
     
     /**
      * Convenience for the subclasses.
@@ -123,14 +83,5 @@ public abstract class GenericNetworkManager
     public void onNewClient(NetworkSession session, String protocolName, String ip, int port)
     {
         newClient.onNewClient(session, protocolName, ip, port);
-    }
-    
-    
-    /**
-     * Convenience for the subclasses.
-     */
-    public void onLostClient(NetworkSession session)
-    {
-        lostClient.onLostClient(session);
     }
 }

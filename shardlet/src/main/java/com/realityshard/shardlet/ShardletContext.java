@@ -24,16 +24,6 @@ public interface ShardletContext
 {
 
     /**
-     * Returns the name and version of the Shardlet container which created
-     * this context.
-     *
-     * @return      A <code>String</code> containing at least the 
-     *              Shardlet container name and version number
-     */
-    public String getServerInfo();
-
-
-    /**
      * Getter.
      *
      * Note that the port of a server is protocol specific, so we cannot determine
@@ -200,7 +190,7 @@ public interface ShardletContext
      * CAUTION: Before calling this, make sure that you saved all data,
      * as every object connected with the game app will get garbage-collected.
      */
-    public void tryUnload();
+    public void unload();
 }
 
 

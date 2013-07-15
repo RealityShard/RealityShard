@@ -62,16 +62,7 @@ public interface GameAppContextBuildDescriptors
      */
     public interface BuildName 
     {
-        public BuildDescription useName(String name);
-    }    
-    
-    
-    /**
-     * Build step: add the description of this game app
-     */
-    public interface BuildDescription 
-    {
-        public BuildPacemaker useDescription(String description);
+        public BuildPacemaker useName(String name);
     }
 
     
