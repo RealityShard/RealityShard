@@ -8,10 +8,7 @@ import com.realityshard.shardlet.environment.GameAppManager;
 import com.realityshard.container.gameapp.DefaultContext;
 import com.realityshard.container.gameapp.GameAppContext;
 import com.realityshard.shardlet.environment.Environment;
-import com.realityshard.network.ApplicationLayer;
-import com.realityshard.network.NetworkLayer;
-import com.realityshard.network.NetworkSession;
-import com.realityshard.shardlet.GlobalExecutor;
+import com.realityshard.network.*;
 import com.realityshard.shardlet.RemoteShardletContext;
 import com.realityshard.shardlet.ShardletContext;
 import com.realityshard.shardlet.environment.GameAppFactory;
@@ -19,11 +16,9 @@ import com.realityshard.shardlet.environment.ProtocolFactory;
 import com.realityshard.shardlet.utils.GenericTriggerableAction;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,20 +35,21 @@ import org.slf4j.LoggerFactory;
  * 
  * @author _rusty
  */
-public final class ContainerFacade
-    implements ApplicationLayer, GameAppManager
+public final class ContainerFacade implements
+        GameAppManager,
+        LayerEventHandlers.NewPacket,
+        LayerEventHandlers.NewClient,
+        LayerEventHandlers.LostClient
 {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(ContainerFacade.class);
     
     private final NetworkLayer network;
-    private final ScheduledExecutorService executor;
     private final Map<NetworkSession, GameSession> sessions;
     
     private final Map<String, ProtocolChain> protocols;
     private final Map<String, GameAppFactory> gameApps;
     
-    private final Environment env;
     private final DefaultContext defaultContext;
     
     
@@ -71,16 +67,12 @@ public final class ContainerFacade
         // the network manager will handle the networking stuff,
         // like sending and recieving data.
         this.network = network;
-        this.network.setApplicationLayer(this);
-        
-        // the executor is responsible for multithreading of this server
-        // every internal event listener below will automatically be running parallel
-        // depending on the executors decision, because when an event is triggered,
-        // the event-aggregator will direct the event-handler invocations to the executor
-        this.executor = GlobalExecutor.get();
+        // we need to subscribe to its events though.
+        this.network.RegisterOnNewPacket(this);
+        this.network.RegisterOnNewClient(this);
+        this.network.RegisterOnLostClient(this);
         
         this.sessions = new ConcurrentHashMap<>();
-        this.env = env;
         
         protocols = new ConcurrentHashMap<>();
         gameApps = new ConcurrentHashMap<>();
@@ -103,7 +95,7 @@ public final class ContainerFacade
      * @param       rawData
      */
     @Override
-    public void handlePacket(NetworkSession netSession, ByteBuffer rawData)
+    public void onNewPacket(NetworkSession netSession, ByteBuffer rawData)
     {
         // we could do anything we want with this packet here,
         // but we don't
@@ -137,7 +129,7 @@ public final class ContainerFacade
      * @param       port
      */
     @Override
-    public void newClient(NetworkSession netSession, String protocolName, String IP, int port) 
+    public void onNewClient(NetworkSession netSession, String protocolName, String IP, int port) 
     {
         // add the client here,
         sessions.put(netSession, new GameSession(
@@ -147,6 +139,31 @@ public final class ContainerFacade
                 port, 
                 protocolName,
                 protocols.get(protocolName)));
+    }
+    
+    
+    /**
+     * Called by the network manager when a client disconnects
+     * 
+     * @param       netSession 
+     */
+    @Override
+    public void onLostClient(NetworkSession netSession) 
+    {
+        // temporarily get the session
+        GameSession session = sessions.get(netSession);
+        
+        if (session == null)
+        {
+            LOGGER.error("An unkown client disconnected! (Its network-session is not registered with the Container)");
+            return;
+        }
+
+        // only to remove it afterwards
+        sessions.remove(netSession);
+
+        // and finally unregister that session with its context
+        ((GameAppContext) session.getShardletContext()).handleLostClient(session);
     }
     
     
@@ -199,31 +216,6 @@ public final class ContainerFacade
         
         // now remove the game app
         defaultContext.removeGameApp(thatGameApp);
-    }
-    
-
-    /**
-     * Called by the network manager when a client disconnects
-     * 
-     * @param       netSession 
-     */
-    @Override
-    public void lostClient(NetworkSession netSession) 
-    {
-        // temporarily get the session
-        GameSession session = sessions.get(netSession);
-        
-        if (session == null)
-        {
-            LOGGER.error("An unkown client disconnected! (Its network-session is not registered with the Container)");
-            return;
-        }
-
-        // only to remove it afterwards
-        sessions.remove(netSession);
-
-        // and finally unregister that session with its context
-        ((GameAppContext) session.getShardletContext()).handleLostClient(session);
     }
     
     

@@ -24,16 +24,19 @@ public class MinaClientHandler extends IoHandlerAdapter
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(MinaClientHandler.class);
     
+    private final MinaNetworkManager netManager;
     private final String protocol;
     
     
     /**
      * Constructor.
      * 
+     * @param       netManager 
      * @param       protocol 
      */
-    public MinaClientHandler(String protocol)
+    public MinaClientHandler(MinaNetworkManager netManager, String protocol)
     {
+        this.netManager = netManager;
         this.protocol = protocol;
     }
     
@@ -65,11 +68,7 @@ public class MinaClientHandler extends IoHandlerAdapter
         buff.order(ByteOrder.LITTLE_ENDIAN);
         
         // inform the application layer
-        MinaNetworkManager
-                .getAppLayer()
-                .handlePacket(
-                    (NetworkSession) session.getAttribute("adapter"),
-                    buff);
+        netManager.onNewPacket((NetworkSession) session.getAttribute("adapter"), buff);
     }
     
     
@@ -91,9 +90,7 @@ public class MinaClientHandler extends IoHandlerAdapter
         
         InetSocketAddress addr = (InetSocketAddress) session.getRemoteAddress();
         // inform the application layer
-        MinaNetworkManager
-                .getAppLayer()
-                .newClient(
+        netManager.onNewClient(
                     netSession, 
                     protocol, 
                     addr.getAddress().getHostAddress(), 
@@ -111,9 +108,6 @@ public class MinaClientHandler extends IoHandlerAdapter
     {
         LOGGER.debug("Session closed on {}.", protocol);
         
-        MinaNetworkManager
-                .getAppLayer()
-                .lostClient(
-                    (NetworkSession) session.getAttribute("adapter"));
+        netManager.onLostClient((NetworkSession) session.getAttribute("adapter"));
     }
 }

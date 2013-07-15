@@ -4,7 +4,7 @@
 
 package com.realityshard.network.mina;
 
-import com.realityshard.network.ApplicationLayer;
+import com.realityshard.network.GenericNetworkManager;
 import com.realityshard.network.NetworkSession;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,8 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.buffer.BufferedWriteFilter;
-import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.slf4j.Logger;
@@ -30,26 +28,12 @@ import org.slf4j.LoggerFactory;
  * 
  * @author _rusty
  */
-public class MinaNetworkManager  
+public class MinaNetworkManager extends GenericNetworkManager 
 {
     private final static Logger LOGGER = LoggerFactory.getLogger(MinaNetworkManager.class);
     
     private final static Map<String, MinaClientHandler> handlers = new ConcurrentHashMap<>();
     private final static Collection<NioSocketAcceptor> acceptors = new ArrayList<>();
-    
-    private static ApplicationLayer appLayer;
-    
-    
-    /**
-     * This has to be called before the NetMan is usable
-     * (We need to know where to dispatch the packets to...)
-     * 
-     * @param appLayer 
-     */
-    public static void init(ApplicationLayer appLayer)
-    {
-        MinaNetworkManager.appLayer = appLayer;
-    }
     
     
     /**
@@ -59,10 +43,9 @@ public class MinaNetworkManager
      * 
      * @param       protocol 
      * @param       port
-     * @throws      IOException 
      */
-    public static void addAcceptor(String protocol, int port)
-            throws IOException
+    @Override
+    public void addAcceptor(String protocol, int port)
     {
         if (handlers.containsKey(protocol))
         {
@@ -74,25 +57,23 @@ public class MinaNetworkManager
         // specified port
         NioSocketAcceptor acceptor = new NioSocketAcceptor();
         
-        // log all events by adding a logging filter:
-        //acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-        
-        // we want to get a basic bytebuffer packet input, so lets add that
-        // as a codec filter
-        // TODO: this filter needs to be flushed from time to time... is there a timeout
-        // (else small packets wont be send)
-        //acceptor.getFilterChain().addLast("buffer", new BufferedWriteFilter(1024));
-        
         // create the handler
-        MinaClientHandler handler = new MinaClientHandler(protocol);
-        acceptor.setHandler(new MinaClientHandler(protocol));
+        MinaClientHandler handler = new MinaClientHandler(this, protocol);
+        acceptor.setHandler(new MinaClientHandler(this, protocol));
         handlers.put(protocol, handler);
         
         acceptor.getSessionConfig().setReadBufferSize(2048);
         acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 10);
         
-        // start the acceptor:
-        acceptor.bind(new InetSocketAddress(port));
+        try 
+        {
+            // start the acceptor:
+            acceptor.bind(new InetSocketAddress(port));
+        } 
+        catch (IOException ex) 
+        {
+            LOGGER.error("Got a problem starting the Mina network acceptor.", ex);
+        }
         
         // add the acceptor to our list:
         acceptors.add(acceptor);
@@ -109,7 +90,8 @@ public class MinaNetworkManager
      * @param       port                    The remote port
      * @return      Null if no session could be created
      */
-    public static NetworkSession addConnector(String protocol, String remoteAddr, int port)
+    @Override
+    public NetworkSession addConnector(String protocol, String remoteAddr, int port)
     {
         if (!handlers.containsKey(protocol))
         {
@@ -120,13 +102,6 @@ public class MinaNetworkManager
         // create a new connector, that will be used to create the session
         // to a specific client
         NioSocketConnector connector = new NioSocketConnector();
-        
-        // log all events...
-        //connector.getFilterChain().addLast("logger", new LoggingFilter());
-        
-        // we want to get a basic bytebuffer packet input, so lets add that
-        // as a codec filter
-        //connector.getFilterChain().addLast("buffer", new BufferedWriteFilter(1024));
         
         MinaClientHandler handler = handlers.get(protocol);
         connector.setHandler(handler);
@@ -152,23 +127,13 @@ public class MinaNetworkManager
         
         return null;
     }
-
-    
-    /**
-     * Getter.
-     * 
-     * @return      The application layer connected to this network layer :D
-     */
-    public static ApplicationLayer getAppLayer() 
-    {
-        return appLayer;
-    }
     
     
     /**
      * Shutdown the acceptors.
      */
-    public static void shutdown()
+    @Override
+    public void shutdown()
     {
         for (NioSocketAcceptor acceptor : acceptors) 
         {

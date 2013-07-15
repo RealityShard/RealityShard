@@ -4,10 +4,8 @@
 
 package com.realityshard.network;
 
+import com.realityshard.network.mina.MinaNetworkManager;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import org.apache.mina.core.session.IoSession;
 
 
 /**
@@ -17,6 +15,14 @@ import org.apache.mina.core.session.IoSession;
  */
 public interface NetworkLayer
 {
+    
+    public class Factory
+    {
+        public static NetworkLayer createUsingMina()
+        {
+            return new MinaNetworkManager();
+        }
+    }
    
     
     /**
@@ -48,19 +54,31 @@ public interface NetworkLayer
     
     
     /**
-     * Setter.
-     * 
-     * @param       appLayer                The application layer that the netman
-     *                                      will invoke when receiving new packets
-     *                                      or accepting new clients.
+     * Try to stop any running network service.
      */
-    public void setApplicationLayer(ApplicationLayer appLayer);
+    public void shutdown();
     
     
     /**
-     * Getter.
+     * Register a listener for the NewPacket event.
      * 
-     * @return      This server's own ip address.
+     * @param       newPacket               The listener.
      */
-    public String getHostAddress();
+    public void RegisterOnNewPacket(LayerEventHandlers.NewPacket newPacket);
+    
+    
+    /**
+     * Register a listener for the NewClient event.
+     * 
+     * @param       newClient               The listener.
+     */
+    public void RegisterOnNewClient(LayerEventHandlers.NewClient newClient);
+    
+    
+    /**
+     * Register a listener for the LostClient event.
+     * 
+     * @param       lostClient               The listener.
+     */
+    public void RegisterOnLostClient(LayerEventHandlers.LostClient lostClient);
 }
