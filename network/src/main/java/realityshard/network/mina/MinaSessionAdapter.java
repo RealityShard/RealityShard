@@ -14,76 +14,76 @@ import org.apache.mina.core.session.IoSession;
 /**
  * This is an implementation of NetworkSession, that makes use of
  * the apache mina framework's features.
- * 
+ *
  * @author _rusty
  */
 public class MinaSessionAdapter implements NetworkSession
 {
-    
+
     private final IoSession session;
-    
+
     private NetEventHandlers.NewData newData;
     private NetEventHandlers.LostClient lostClient;
-    
-    
+
+
     /**
      * Constructor.
-     * 
-     * @param       session 
+     *
+     * @param       session
      */
     public MinaSessionAdapter(IoSession session)
     {
         this.session = session;
     }
 
-    
+
     /**
      * Write data.
-     * 
+     *
      * @param       buffer
      */
     @Override
-    public void write(ByteBuffer buffer) 
+    public void write(ByteBuffer buffer)
     {
         session.write(IoBuffer.wrap(buffer));
     }
 
-    
+
     /**
      * Disconnect this session.
      */
     @Override
-    public void disconnect() 
+    public void disconnect()
     {
         // close this session immediately
         session.close(true);
     }
 
-    
+
     /**
      * Register an event handler.
-     * 
-     * @param       newData 
+     *
+     * @param       newData
      */
     @Override
-    public void registerOnNewData(NetEventHandlers.NewData newData) 
+    public void registerOnNewData(NetEventHandlers.NewData newData)
     {
         this.newData = newData;
     }
 
-    
+
     /**
      * Register an event handler.
-     * 
-     * @param       lostClient 
+     *
+     * @param       lostClient
      */
     @Override
-    public void registerOnLostClient(NetEventHandlers.LostClient lostClient) 
+    public void registerOnLostClient(NetEventHandlers.LostClient lostClient)
     {
         this.lostClient = lostClient;
     }
-    
-    
+
+
     /**
      * Event trigger.
      */
@@ -91,8 +91,8 @@ public class MinaSessionAdapter implements NetworkSession
     {
         newData.onNewData(buffer);
     }
-    
-    
+
+
     /**
      * Event trigger.
      */

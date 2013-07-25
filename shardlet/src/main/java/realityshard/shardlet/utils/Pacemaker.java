@@ -2,7 +2,7 @@
  * For copyright information see the LICENSE document.
  */
 
-package realityshard.container;
+package realityshard.shardlet.utils;
 
 import realityshard.shardlet.EventAggregator;
 import realityshard.shardlet.GlobalExecutor;

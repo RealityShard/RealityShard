@@ -2,7 +2,7 @@
  * For copyright information see the LICENSE document.
  */
 
-package realityshard.shardlet.gameapp;
+package realityshard.container.gameapp;
 
 import realityshard.shardlet.ShardletContext;
 import java.util.Map;
