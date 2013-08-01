@@ -22,8 +22,7 @@ public class GenericAction implements Action
     private String protocol;
     private Session session;
     
-    private volatile ByteBuffer buffer = null;
-    
+
     /**
      * Constructor.
      */
@@ -31,7 +30,6 @@ public class GenericAction implements Action
     {
         protocol = null;
         session = null;
-        buffer = ByteBuffer.allocate(0);
     }
     
     
@@ -62,31 +60,6 @@ public class GenericAction implements Action
             this.session = session;
         }
     }
-    
-    
-    /**
-     * Getter.
-     * 
-     * @return      The byte buffer that represents this objects
-     *              underlying raw data.
-     */
-    @Override
-    public ByteBuffer getBuffer() 
-    {
-        return buffer;
-    }
-
-    
-    /**
-     * Setter.
-     * 
-     * @param       buf 
-     */
-    @Override
-    public void setBuffer(ByteBuffer buf) 
-    {
-        buffer = buf;
-    }
 
     
     /**
@@ -111,31 +84,4 @@ public class GenericAction implements Action
     {
         return session;
     }
-
-    
-    /**
-     * Serialize this action, using a hardcoded serialization method
-     */
-    @Override
-    public boolean serialize() 
-    {
-        // this should never be called directly, but if it is, we will want to
-        // throw an exception to indicate that the user made a severe mistake somewhere
-        throw new UnsupportedOperationException("Invalid method call. (This is method as good as abstract)");
-    }
-
-    
-    /**
-     * Deserialize this action, using a hardcoded deserialization method
-     */
-    @Override
-    public boolean deserialize() 
-    {
-        // this should never be called directly, but if it is, we will want to
-        // throw an exception to indicate that the user made a severe mistake somewhere
-        throw new UnsupportedOperationException("Invalid method call. (This is method as good as abstract)");
-    }
-    
-    
-    
 }

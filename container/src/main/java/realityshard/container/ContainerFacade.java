@@ -4,7 +4,6 @@
 
 package realityshard.container;
 
-import realityshard.shardlet.utils.FilterChainState;
 import java.io.IOException;
 import realityshard.network.NetEventHandlers;
 import realityshard.network.NetworkSession;
@@ -42,7 +41,6 @@ public final class ContainerFacade implements
 
     private final NetworkLayer network;
 
-    private final Map<String, FilterChainState> protocols = new ConcurrentHashMap<>();
     private final Map<String, GameAppFactory> gameApps = new ConcurrentHashMap<>();
 
     private final DefaultContext defaultContext = new DefaultContext();;

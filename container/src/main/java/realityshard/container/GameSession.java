@@ -65,12 +65,8 @@ public final class GameSession extends GenericSession implements
     @Override
     public void onNewData(ByteBuffer rawData)
     {
-        GenericAction action = new GenericAction();
-        action.init(this);
-        action.setBuffer(rawData);
-
         // filter it, and delegate it
-        for (Action act : getState().doInFilter(action))
+        for (Action act : getState().doInFilter(rawData))
         {
             context.handleIncoming(act);
         }
@@ -97,9 +93,7 @@ public final class GameSession extends GenericSession implements
     public void send(Action action)
     {
         // let the state handle the action first
-        Action act = getState().doOutFilter(action);
-
-        ByteBuffer buf = act.getBuffer();
+        ByteBuffer buf = getState().doOutFilter(action);
         buf.flip();
 
         // then send it.
