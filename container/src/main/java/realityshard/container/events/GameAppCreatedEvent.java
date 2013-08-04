@@ -2,14 +2,12 @@
  * For copyright information see the LICENSE document.
  */
 
-package realityshard.shardlet.events;
-
-import realityshard.shardlet.Event;
+package realityshard.container.events;
 
 
 /**
- * This Event is triggered when the ShardletContext of a game-app 
- * has been created successfully, meaning all Shardlets have been initialized.
+ * This Event is triggered by the MetaGameAppContext, when the container
+ * successfully created a gameapp and registered it with the meta context.
  * 
  * This may be the right time to distribute any context-global references.
  * 

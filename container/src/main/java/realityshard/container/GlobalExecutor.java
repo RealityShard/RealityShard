@@ -2,7 +2,7 @@
  * For copyright information see the LICENSE document.
  */
 
-package realityshard.shardlet;
+package realityshard.container;
 
 import java.util.concurrent.ScheduledExecutorService;
 

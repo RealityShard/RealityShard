@@ -50,14 +50,6 @@ fi
 echo ""
 
 
-echo "Initializing & updating the submodules..."
-read -p "[Press any key to continue]" -n 1 -s
-echo ""
-git submodule init
-git submodule update
-echo ""
-
-
 echo "Installing the submodules..."
 read -p "[Press any key to continue]" -n 1 -s
 echo ""
@@ -68,7 +60,7 @@ echo ""
 echo "-----------------------------------------------------------------------------"
 echo "Reality:Shard Installation done."
 echo ""
-echo "If there were any errors during init/update/install of the submodules,"
+echo "If there were any errors during init/update/install of the this,"
 echo "please report them on https://github.com/RealityShard/RealityShard ."
 echo ""
 echo "You can now use RealityShard like any other maven dependecy in your project."

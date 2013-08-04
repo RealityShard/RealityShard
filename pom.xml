@@ -25,8 +25,6 @@
 
 
     <modules>
-        <module>shardlet</module>
-        <module>network</module>
         <module>container</module>
     </modules>
 

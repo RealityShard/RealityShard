@@ -4,13 +4,13 @@
 
 package realityshard.container;
 
-import java.io.IOException;
-import realityshard.network.NetEventHandlers;
-import realityshard.network.NetworkSession;
-import realityshard.network.NetworkLayer;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.nio.NioEventLoopGroup;
+import realityshard.container.gameapp.MetaGameAppContext;
+import java.net.SocketAddress;
 import realityshard.container.gameapp.GameAppManager;
 import realityshard.container.gameapp.GameAppContext;
-import realityshard.shardlet.ShardletContext;
 import realityshard.container.gameapp.GameAppFactory;
 import java.util.HashMap;
 import java.util.List;
@@ -18,165 +18,178 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import realityshard.container.network.GameAppContextKey;
 
 
 /**
- * This class is used as the general Interface for working with the container.
- * Use this within your server-application to gain Shardlet-functionality.
- *
- * Internal usage:
- * For all internal objects, this is a NetworkAdapter
- *
- * External usage:
- * For the network manager object, this is the ApplicationLayer
+ * Container facade is what the host application works with.
+ * Creates all game apps and manages them.
+ * Also manages the network.
  *
  * @author _rusty
  */
-public final class ContainerFacade implements
-        GameAppManager,
-        NetEventHandlers.NewClient
+public final class ContainerFacade implements GameAppManager
 {
 
+    private static final class GameAppInfo
+    {
+        public GameAppFactory Factory;
+        public MetaGameAppContext MetaContext;
+        public ChannelFuture NetworkChannel;
+    }
+
+    
     private final static Logger LOGGER = LoggerFactory.getLogger(ContainerFacade.class);
 
-    private final NetworkLayer network;
-
-    private final Map<String, GameAppFactory> gameApps = new ConcurrentHashMap<>();
-
-    private final DefaultContext defaultContext = new DefaultContext();;
+    private final Map<String, GameAppInfo> gameApps = new ConcurrentHashMap<>();
 
 
     /**
      * Constructor.
-     * This is executed by all constructors.
-     *
-     * @param       network                 The network manager of this application
-     * @param       env                     The environment for this container, meaning
-     *                                      all game apps and protocols as defined by
-     *                                      the <code>Environment</code> interface.
+     * 
+     * @param       factories               The factories for each kind of game app. 
      */
-    public ContainerFacade(NetworkLayer network, List<GameAppFactory> apps)
-            throws IOException
+    public ContainerFacade(List<GameAppFactory> factories)
     {
-        // the network manager will handle the networking stuff,
-        // like sending and recieving data.
-        this.network = network;
-        this.network.registerOnNewClient(this);
-
-        for (GameAppFactory app : apps)
+        for (GameAppFactory factory : factories)
         {
-            gameApps.put(app.getName(), app);
-            network.addNetworkListener(app.getName(), app.getProtocolPort());
+            gameApps.put(factory.getName(), produceInfoFromFactory(factory));
         }
 
         // now start up all start-up apps
         startUpApps();
     }
 
-
+    
     /**
-     * Called by the network manager when a client connects
-     *
-     * @param       netSession
-     * @param       protocolName
-     * @param       IP
-     * @param       port
+     * Check if we can create a game app with a certain name
+     * 
+     * @param       name
+     * @return      True if we got a factory for it, false otherwise
      */
     @Override
-    public void onNewClient(NetworkSession netSession, String protocolName, String IP, int port)
+    public boolean canCreateGameApp(String name) 
     {
-        // create the game session associated with that network client
-        GameSession session = new GameSession(
-                netSession,
-                defaultContext,
-                IP,
-                port,
-                protocolName);
-
-        // let the factory that registered the protocol initialize this session
-        GameAppFactory factory = gameApps.get(protocolName);
-
-        // failcheck
-        if (factory == null) { LOGGER.error("A session was created on a nonexisting protocol! [name {} ]", protocolName); return; }
-
-        factory.initializeSession(session);
-
-
-        // finally, register for the net client events
-        netSession.registerOnNewData(session);
-        netSession.registerOnLostClient(session);
+        return gameApps.containsKey(name);
     }
-
-
+    
+    
     /**
-     * Implementation of the GameAppManager interface.
-     *
-     * @param name
-     * @param parent
-     * @param additionalParams
-     * @return
+     * Create a game app by name.
+     * 
+     * @param       name
+     * @param       parent
+     * @param       additionalParams
+     * @return      The game app or null, if creation failed.
      */
     @Override
-    public GameAppContext createGameApp(String name, ShardletContext.Remote parent, Map<String, String> additionalParams)
+    public GameAppContext.Remote createGameApp(String name, GameAppContext.Remote parent, Map<String, String> additionalParams)
     {
-        GameAppFactory factory = gameApps.get(name);
-
-        // failcheck
-        if (factory == null) { LOGGER.error("Tried to create a nonexisting game app! [name {} ]", name); return null; }
-
-        // if we got that factory, then we just need to create the appropriate game app:
-        GameAppContext newApp = (GameAppContext) factory.produceGameApp(this, parent, additionalParams);
-
-        // failcheck
-        if (newApp == null) { LOGGER.error("Failed to create game app! [name {} ]", name); return null; }
-
-        // dont forget to tell the default context that we have a new app
-        defaultContext.addContext(newApp);
-
-        return newApp;
+        return internalCreateGameApp(name, parent, additionalParams);
     }
 
-
+    
     /**
-     * Called by a game app to unload/close it.
-     *
-     * @param       thatGameApp             The game app that will be removed.
+     * Shutdown a specific game app.
+     * 
+     * @param       that                    Game app
      */
     @Override
-    public void notifyUnload(ShardletContext thatGameApp)
+    public void removeGameApp(GameAppContext that) 
     {
-        // now remove the game app
-        defaultContext.removeGameApp(thatGameApp);
+        GameAppInfo gameAppInfo = gameApps.get(that.getName());
+        
+        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.getName()); return; }
+        
+        gameAppInfo.MetaContext.shutdown(that);
+    }   
+    
+    
+    /**
+     * Getter.
+     * 
+     * @param       that
+     * @return      The local address of that game app.
+     */
+    @Override
+    public SocketAddress localAddressFor(GameAppContext that) 
+    {
+        GameAppInfo gameAppInfo = gameApps.get(that.getName());
+        
+        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.getName()); return null; }
+        
+        return gameAppInfo.NetworkChannel.channel().localAddress();
     }
-
+    
 
     /**
      * Load all apps that have the "start-up" marker
      */
     private void startUpApps()
     {
-        for (GameAppFactory factory : gameApps.values())
+        for (GameAppInfo gameAppInfo : gameApps.values())
         {
-            if (!factory.isStartup()) { continue; }
+            if (!gameAppInfo.Factory.isStartup()) { continue; }
 
-            // create the app
-            GameAppContext newApp = (GameAppContext) factory.produceGameApp(this, null, new HashMap<String, String>());
-
-            // failcheck
-            if (newApp == null) { LOGGER.error("Failed to auto-create game app! [name {} ]", factory.getName()); return; }
-
-            // dont forget to tell the default context that we have a new app
-            defaultContext.addContext(newApp);
+            internalCreateGameApp(gameAppInfo.Factory.getName(), gameAppInfo.MetaContext, new HashMap<String, String>());
         }
     }
 
 
     /**
-     * Shutdown this shardlet container.
-     * (Trigger a ContainerShutdownEvent in each GAContext)
+     * Shutdown this container.
      */
     public void shutdown()
     {
-        defaultContext.shutdown();
+        for (Map.Entry<String, GameAppInfo> entry : gameApps.entrySet()) 
+        {
+            String string = entry.getKey();
+            GameAppInfo gameAppInfo = entry.getValue();
+            
+            gameAppInfo.MetaContext.shutdown();
+            
+            //TODO: shutdown network
+        }
+    }
+    
+    
+    /**
+     * Init our factories and load the info about them into our map.
+     */
+    private GameAppInfo produceInfoFromFactory(GameAppFactory factory)
+    {
+        GameAppInfo result = new GameAppInfo();
+        result.Factory = factory;
+        result.MetaContext = new MetaGameAppContext(factory.getName(), this);
+        
+        ServerBootstrap bootstrap = new ServerBootstrap();
+        bootstrap.group(new NioEventLoopGroup())
+                 .attr(GameAppContextKey.GAME_APP_CONTEXT_KEY, result.MetaContext);
+        
+        result.NetworkChannel = factory.getServerChannel(bootstrap);
+        
+        return result;
+    }
+    
+    
+    /**
+     * Create a new game app, using the factory.
+     */
+    private GameAppContext.Remote internalCreateGameApp(String name, GameAppContext.Remote parent, Map<String, String> additionalParams)
+    {
+        GameAppInfo gameAppInfo = gameApps.get(name);
+        
+        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", name); return null; }
+        
+        // create the app
+        GameAppContext.Remote newApp = gameAppInfo.Factory.produceGameApp(this, gameAppInfo.MetaContext, additionalParams);
+
+        // failcheck
+        if (newApp == null) { LOGGER.error("Failed to create game app! [name {} ]", gameAppInfo.Factory.getName()); return null; }
+
+        // dont forget to add it to the metacontext
+        gameAppInfo.MetaContext.addContext(newApp);
+
+        return newApp;
     }
 }

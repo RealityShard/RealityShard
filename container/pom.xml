@@ -19,18 +19,11 @@
 
 
     <dependencies>
-        <!-- The Shardlet API -->
-        <dependency>
-            <groupId>com.realityshard</groupId>
-            <artifactId>shardlet</artifactId>
-            <version>${parent.version}</version>
-        </dependency>
-
         <!-- The Network API -->
         <dependency>
-            <groupId>com.realityshard</groupId>
-            <artifactId>network</artifactId>
-            <version>${parent.version}</version>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.3.Final</version>
         </dependency>
     </dependencies>
 

@@ -4,7 +4,7 @@
 
 package realityshard.container.gameapp;
 
-import realityshard.shardlet.ShardletContext;
+import java.net.SocketAddress;
 import java.util.Map;
 
 
@@ -17,29 +17,49 @@ import java.util.Map;
  */
 public interface GameAppManager 
 {
+    
+    /**
+     * Check if we actually can create a game app with that name.
+     * 
+     * @param       name                    The name of the game app (All game
+     *                                      game apps produced by one factory
+     *                                      have the same name)
+     * @return      True if it can be created, false if not.
+     */
+    public boolean canCreateGameApp(String name);
+    
+    
     /**
      * Creates a new game app of type 'name'
      * 
      * @param       name                    The name of this game app as defined by
-     *                                      the deployment descriptor or development env
+     *                                      the factory.
      * @param       parent                  The parent game app that created this game app
-     *                                      (null if there was none)
+     *                                      (null if there was none).
      * @param       additionalParams        Any additionaly init params.
      * @return      The shardlet context that was created, or null if the creation failed.
      */
-    public ShardletContext createGameApp(String name, ShardletContext.Remote parent, Map<String, String> additionalParams);
+    public GameAppContext.Remote createGameApp(String name, GameAppContext.Remote parent, Map<String, String> additionalParams);
     
     
     /**
-     * Should be called by a game app to unload/close/shutdown itself.
-     * The game-app manager will then remove any reference to that game-app,
-     * so it gets garbage collected.
+     * This is the only method to delete a game app from the container.
+     * Game Apps should never delete themselves on their own.
      * 
-     * Any sessions connected with that game app will be invalidated.
+     * Any channels connected with this game app will be invalidated.
      * 
-     * @param       me                      The game app that will be unloaded
-     *                                      (This should not be called by other
-     *                                      game apps...)
+     * @param       that                    The game app that will be unloaded
      */
-    public void notifyUnload(ShardletContext me);
+    public void removeGameApp(GameAppContext that);
+    
+    
+    /**
+     * Use this method to gain info about the local network interface that listens
+     * for new channels.
+     * 
+     * @param       that                    The specific context that the
+     *                                      network interface belongs to.
+     * @return      The local address of the gameapp context.
+     */
+    public SocketAddress localAddressFor(GameAppContext that);
 }

@@ -2,7 +2,7 @@
  * For copyright information see the LICENSE document.
  */
 
-package realityshard.shardlet;
+package realityshard.container.events;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import realityshard.container.GlobalExecutor;
 
 /**
  * An Event Aggregator is a module that decouples the component that actually 
@@ -56,10 +56,12 @@ public class EventAggregator
         @Override
         public void run() 
         {
-            try { 
+            try 
+            { 
                 invokableHandler.HandlerMethod.invoke(invokableHandler.HandlerObject, parameter); 
             } 
-            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) { 
+            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) 
+            { 
                 LOGGER.warn("Could not execute an event handler", ex); 
             }
         }
@@ -112,7 +114,7 @@ public class EventAggregator
             // failchecks first
             
             // check if the method has an annotation of type EventHandler
-            if (method.getAnnotation(EventHandler.class) == null) { continue; }
+            if (method.getAnnotation(Event.Handler.class) == null) { continue; }
 
             Class<?>[] params = method.getParameterTypes();
             

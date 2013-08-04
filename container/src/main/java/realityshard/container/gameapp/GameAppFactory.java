@@ -4,19 +4,21 @@
 
 package realityshard.container.gameapp;
 
-import realityshard.shardlet.Shardlet;
-import realityshard.shardlet.ShardletContext;
+import io.netty.bootstrap.ChannelFactory;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.util.AttributeKey;
+import io.netty.util.UniqueName;
 import java.util.Map;
-import realityshard.shardlet.Session;
 
 
 /**
  * This interface defines how a factory for game apps should look like.
- * This is used within the context manager to produce new game apps.
+ * This is used within the container to produce new game apps.
  *
  * @author _rusty
  */
-public interface GameAppFactory
+public interface GameAppFactory extends Comparable<UniqueName>
 {
 
     /**
@@ -40,33 +42,27 @@ public interface GameAppFactory
 
 
     /**
-     * The protocol port is the port that this gameapp will accept clients on.
-     * When the container starts up, it will instruct the network layer to produce
-     * a new listening socket on that port.
-     *
-     * @return      The portnumber.
+     * Produce a new server channel.
+     * This should be done here:
+     * - Create a new ServerBootstrap
+     * - Configure the child-channel preferences
+     * - Bind to a port (and return the ChannelFuture)
+     * 
+     * (Only executed once at startup)
+     * 
+     * @param       bootstrap               Use this bootstrap to implement the method.
+     * @return      The server channel for gameapps produced by this factory.
      */
-    public int getProtocolPort();
+    public ChannelFuture getServerChannel(ServerBootstrap bootstrap);
 
-
+    
     /**
-     * This method will be called by the container when a new session has been
-     * established.
-     * Use this to set this Sessions state and attachment!
+     * Create a new Game-App.
      *
-     * @return
-     */
-    public void initializeSession(Session session);
-
-
-    /**
-     * Create a new Game-App and return its context.
-     *
-     * @param       manager                 The new game app needs to know the game app manager of
-     *                                      this container, so it can create new game apps etc.
+     * @param       manager                 The manager of this new game app.
      * @param       parent                  The parent context of the new context (if any)
      * @param       additionalParams        The additional parameters used for game app creation.
-     * @return      The new GameApp as a shardlet.ShardletContext
+     * @return      The new GameApp if successfull, else null.
      */
-    public ShardletContext produceGameApp(GameAppManager manager, ShardletContext.Remote parent, Map<String, String> additionalParams);
+    public GameAppContext.Remote produceGameApp(GameAppManager manager, GameAppContext.Remote parent, Map<String, String> additionalParams);
 }
