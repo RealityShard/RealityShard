@@ -15,5 +15,5 @@ import realityshard.container.gameapp.GameAppContext;
  */
 public abstract class GameAppContextKey 
 {
-	public static AttributeKey<GameAppContext> GAME_APP_CONTEXT_KEY = new AttributeKey<>(GameAppContext.class.getName());
+	public static AttributeKey<GameAppContext> KEY = new AttributeKey<>(GameAppContext.class.getName());
 }

@@ -5,8 +5,10 @@
 package realityshard.container;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
+import io.netty.channel.Channel;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import java.net.InetSocketAddress;
 import realityshard.container.gameapp.MetaGameAppContext;
 import java.net.SocketAddress;
 import realityshard.container.gameapp.GameAppManager;
@@ -35,7 +37,7 @@ public final class ContainerFacade implements GameAppManager
     {
         public GameAppFactory Factory;
         public MetaGameAppContext MetaContext;
-        public ChannelFuture NetworkChannel;
+        public NioServerSocketChannel NetworkChannel;
     }
 
     
@@ -49,7 +51,7 @@ public final class ContainerFacade implements GameAppManager
      * 
      * @param       factories               The factories for each kind of game app. 
      */
-    public ContainerFacade(List<GameAppFactory> factories)
+    public ContainerFacade(List<GameAppFactory> factories) throws Exception
     {
         for (GameAppFactory factory : factories)
         {
@@ -112,13 +114,13 @@ public final class ContainerFacade implements GameAppManager
      * @return      The local address of that game app.
      */
     @Override
-    public SocketAddress localAddressFor(GameAppContext that) 
+    public InetSocketAddress localAddressFor(GameAppContext that) 
     {
         GameAppInfo gameAppInfo = gameApps.get(that.getName());
         
         if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.getName()); return null; }
         
-        return gameAppInfo.NetworkChannel.channel().localAddress();
+        return gameAppInfo.NetworkChannel.localAddress();
     }
     
 
@@ -147,8 +149,7 @@ public final class ContainerFacade implements GameAppManager
             GameAppInfo gameAppInfo = entry.getValue();
             
             gameAppInfo.MetaContext.shutdown();
-            
-            //TODO: shutdown network
+            gameAppInfo.NetworkChannel.close().syncUninterruptibly();
         }
     }
     
@@ -156,7 +157,7 @@ public final class ContainerFacade implements GameAppManager
     /**
      * Init our factories and load the info about them into our map.
      */
-    private GameAppInfo produceInfoFromFactory(GameAppFactory factory)
+    private GameAppInfo produceInfoFromFactory(GameAppFactory factory) throws Exception
     {
         GameAppInfo result = new GameAppInfo();
         result.Factory = factory;
@@ -164,9 +165,10 @@ public final class ContainerFacade implements GameAppManager
         
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(new NioEventLoopGroup())
-                 .attr(GameAppContextKey.GAME_APP_CONTEXT_KEY, result.MetaContext);
+                 .channel(NioServerSocketChannel.class)
+                 .attr(GameAppContextKey.KEY, result.MetaContext);
         
-        result.NetworkChannel = factory.getServerChannel(bootstrap);
+        result.NetworkChannel = (NioServerSocketChannel) factory.getServerChannel(bootstrap);
         
         return result;
     }

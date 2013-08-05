@@ -93,14 +93,17 @@ public class EventAggregator
      * This is done globally. Any event of the requested kind will be transmitted to
      * the handler. 
      * 
+     * (This is a fluent method)
+     * 
      * @param       handlerImpl             The object that holds different kind of handlers for various
      *                                      events. 
      *                                      These handler-methods should have <code>@EventListener</code>
      *                                      as an annotation, and follow the signature:
      *                                      * they have only one parameter which type implements Shardlet.Event and
      *                                      * return void
+     * @return      This aggregator.
      */
-    public void register(Object handlerImpl)
+    public EventAggregator register(Object handlerImpl)
     {
         // get all the declared methods of the object with the handler implementations
         // so we can look for annotations
@@ -152,6 +155,8 @@ public class EventAggregator
             // finally add the handler reference
             list.add(handler);
         }
+        
+        return this;
     }
     
     

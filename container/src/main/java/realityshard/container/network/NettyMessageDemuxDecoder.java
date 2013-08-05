@@ -23,7 +23,7 @@ public class NettyMessageDemuxDecoder extends MessageToMessageDecoder<Message>
     protected void decode(ChannelHandlerContext ctx, Message msg, List<Object> out) throws Exception 
     {
         // get the specific game app context this event belongs to
-        GameAppContext context = ctx.channel().attr(GameAppContextKey.GAME_APP_CONTEXT_KEY).get();
+        GameAppContext context = ctx.channel().attr(GameAppContextKey.KEY).get();
         
         // and let the context decide what to do with the message
         context.handle(msg);

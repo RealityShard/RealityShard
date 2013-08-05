@@ -5,10 +5,13 @@
 package realityshard.container.network;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
@@ -20,8 +23,45 @@ import javax.crypto.spec.SecretKeySpec;
  * 
  * @author _rusty
  */
-public class NettyRC4Codec extends MessageToByteEncoder<ByteBuf>
+public final class NettyRC4Codec 
 {
+    
+    /**
+     * Use this class to encode outbound streams
+     */
+    public static final class Encoder extends MessageToByteEncoder<ByteBuf>
+    {
+        private NettyRC4Codec codec;
+        
+        public Encoder(byte[] rc4Key) { codec = new NettyRC4Codec(rc4Key, Mode.ENCRYPT_MODE); }
+
+        @Override
+        protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws Exception 
+        {
+            codec.encode(ctx, msg, out);
+        }
+    }
+    
+    
+    /**
+     * Use this class to decode outbound streams
+     */
+    public static final class Decoder extends ByteToMessageDecoder
+    {
+        private NettyRC4Codec codec;
+        
+        public Decoder(byte[] rc4Key) { codec = new NettyRC4Codec(rc4Key, Mode.DECRYPT_MODE); }
+
+        @Override
+        protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception 
+        {
+            ByteBuf outBuf = Unpooled.buffer(msg.readableBytes());
+            codec.encode(ctx, msg, outBuf);
+            
+            out.add(outBuf);
+        }
+    }
+    
     
     public enum Mode
     {
@@ -36,7 +76,7 @@ public class NettyRC4Codec extends MessageToByteEncoder<ByteBuf>
     private final Cipher rc4Encrypt;
     
     
-    public NettyRC4Codec(byte[] rc4Key, Mode mode)
+    private NettyRC4Codec(byte[] rc4Key, Mode mode)
     {
         try 
         {
@@ -53,7 +93,6 @@ public class NettyRC4Codec extends MessageToByteEncoder<ByteBuf>
     }
     
 
-    @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf in, ByteBuf out) throws Exception 
     {
         byte[] dataToBeEncrypted = new byte[in.readableBytes()];

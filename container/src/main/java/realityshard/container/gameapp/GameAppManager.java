@@ -4,6 +4,7 @@
 
 package realityshard.container.gameapp;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
 
@@ -61,5 +62,5 @@ public interface GameAppManager
      *                                      network interface belongs to.
      * @return      The local address of the gameapp context.
      */
-    public SocketAddress localAddressFor(GameAppContext that);
+    public InetSocketAddress localAddressFor(GameAppContext that);
 }

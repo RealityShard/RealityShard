@@ -4,11 +4,9 @@
 
 package realityshard.container.gameapp;
 
-import io.netty.bootstrap.ChannelFactory;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.util.AttributeKey;
-import io.netty.util.UniqueName;
 import java.util.Map;
 
 
@@ -18,7 +16,7 @@ import java.util.Map;
  *
  * @author _rusty
  */
-public interface GameAppFactory extends Comparable<UniqueName>
+public interface GameAppFactory
 {
 
     /**
@@ -53,7 +51,8 @@ public interface GameAppFactory extends Comparable<UniqueName>
      * @param       bootstrap               Use this bootstrap to implement the method.
      * @return      The server channel for gameapps produced by this factory.
      */
-    public ChannelFuture getServerChannel(ServerBootstrap bootstrap);
+    public Channel getServerChannel(ServerBootstrap bootstrap)
+            throws Exception;
 
     
     /**

@@ -53,6 +53,14 @@ public interface GameAppContext
      */
     public void trigger(Event event);
     
+    
+    /**
+     * Getter.
+     * 
+     * @return      The internal instance of EventAggregator.
+     */
+    public EventAggregator getEventAggregator();
+    
         
     /**
      * Getter.
@@ -92,15 +100,16 @@ public interface GameAppContext
 
         private final static Logger LOGGER = LoggerFactory.getLogger(Default.class);
 
-        protected EventAggregator aggregator;
-        protected String name = "";
-        protected GameAppManager manager;
-        protected GameAppContext.Remote parent;
+        private EventAggregator aggregator;
+        private String name = "";
+        private GameAppManager manager;
+        private GameAppContext.Remote parent;
 
         
         /**
          * Constructor.
          * 
+         * @param       name                The name of the game app
          * @param       manager             The container-specific game app manager.
          * @param       parent              The parent that created this context.
          */
@@ -132,6 +141,13 @@ public interface GameAppContext
         public void trigger(Event event) 
         {
             aggregator.triggerEvent(event);
+        }
+        
+        
+        @Override
+        public EventAggregator getEventAggregator()
+        {
+            return aggregator;
         }
 
         
