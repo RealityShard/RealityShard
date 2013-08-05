@@ -4,9 +4,7 @@
 
 package realityshard.container.util;
 
-import io.netty.channel.Channel;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.UUID;
 
 
 /**
@@ -32,7 +30,7 @@ public interface Handle<T extends Object>
      * 
      * @return      The uid that actually belongs to this handle
      */
-    InternalUid getUid();
+    UUID getUid();
     
     
     /**
