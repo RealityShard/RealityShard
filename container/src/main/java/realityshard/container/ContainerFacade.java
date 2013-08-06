@@ -179,7 +179,7 @@ public final class ContainerFacade implements GameAppManager
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(new NioEventLoopGroup())
                  .channel(NioServerSocketChannel.class)
-                 .attr(GameAppContextKey.KEY, result.MetaContext);
+                 .childAttr(GameAppContextKey.KEY, result.MetaContext);
         
         result.NetworkChannel = (NioServerSocketChannel) factory.getServerChannel(bootstrap);
         
@@ -200,7 +200,7 @@ public final class ContainerFacade implements GameAppManager
         GameAppContext context = new GameAppContext.Default(name, this, parent);
         
         // register it
-        Handle<GameAppContext> contextHandle = gameAppHandleRegistry.produce(context);
+        Handle<GameAppContext> contextHandle = gameAppHandleRegistry.register(context);
         
         // create the app
         if (gameAppInfo.Factory.initGameApp(contextHandle, parent, additionalParams))
