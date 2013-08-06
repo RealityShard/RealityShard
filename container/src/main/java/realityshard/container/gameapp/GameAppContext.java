@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import realityshard.container.events.Event;
 import realityshard.container.events.EventAggregator;
 import realityshard.container.network.Message;
+import realityshard.container.util.Handle;
 
 
 /**
@@ -18,25 +19,7 @@ import realityshard.container.network.Message;
  * @author _rusty
  */
 public interface GameAppContext 
-{
-    
-    /**
-     * This interface represents a remote game app context.
-     * Use it pass events to other game apps.
-     */
-    public static interface Remote extends GameAppContext
-    {
-
-        /**
-         * Use this method to transmit an event to another game app and
-         * have it triggered there.
-         * 
-         * @param       event                   This is triggered in the remote Context
-         *                                      ideally, it should be implemented there.
-         */
-        public void sendRemoteEvent(Event event);
-    }
-    
+{    
 
     /**
      * Handles a new network message.
@@ -86,7 +69,7 @@ public interface GameAppContext
      * 
      * @return      The reference to the parent context of this context
      */
-    public GameAppContext.Remote getParentContext();
+    public Handle<GameAppContext> getParentContext();
 
     
     /**
@@ -95,7 +78,7 @@ public interface GameAppContext
      * 
      * @author _rusty
      */
-    public static class Default implements GameAppContext, GameAppContext.Remote
+    public static class Default implements GameAppContext
     {
 
         private final static Logger LOGGER = LoggerFactory.getLogger(Default.class);
@@ -103,7 +86,7 @@ public interface GameAppContext
         private EventAggregator aggregator;
         private String name = "";
         private GameAppManager manager;
-        private GameAppContext.Remote parent;
+        private Handle<GameAppContext> parent;
 
         
         /**
@@ -113,20 +96,13 @@ public interface GameAppContext
          * @param       manager             The container-specific game app manager.
          * @param       parent              The parent that created this context.
          */
-        public Default(String name, GameAppManager manager, GameAppContext.Remote parent)
+        public Default(String name, GameAppManager manager, Handle<GameAppContext> parent)
         {
             this.name = name;
             this.manager = manager;
             this.parent = parent;
             
             aggregator = new EventAggregator();
-        }
-
-
-        @Override
-        public void sendRemoteEvent(Event event)
-        {
-            trigger(event);
         }
         
 
@@ -166,7 +142,7 @@ public interface GameAppContext
         
         
         @Override
-        public GameAppContext.Remote getParentContext()
+        public Handle<GameAppContext> getParentContext()
         {
             return parent;
         }

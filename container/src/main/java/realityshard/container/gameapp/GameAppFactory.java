@@ -6,8 +6,8 @@ package realityshard.container.gameapp;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import java.util.Map;
+import realityshard.container.util.Handle;
 
 
 /**
@@ -63,5 +63,5 @@ public interface GameAppFactory
      * @param       additionalParams        The additional parameters used for game app creation.
      * @return      The new GameApp if successfull, else null.
      */
-    public GameAppContext.Remote produceGameApp(GameAppManager manager, GameAppContext.Remote parent, Map<String, String> additionalParams);
+    public Handle<GameAppContext> produceGameApp(GameAppManager manager, Handle<GameAppContext> parent, Map<String, String> additionalParams);
 }

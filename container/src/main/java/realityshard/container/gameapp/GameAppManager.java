@@ -5,8 +5,8 @@
 package realityshard.container.gameapp;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Map;
+import realityshard.container.util.Handle;
 
 
 /**
@@ -40,7 +40,7 @@ public interface GameAppManager
      * @param       additionalParams        Any additionaly init params.
      * @return      The shardlet context that was created, or null if the creation failed.
      */
-    public GameAppContext.Remote createGameApp(String name, GameAppContext.Remote parent, Map<String, String> additionalParams);
+    public Handle<GameAppContext> createGameApp(String name, Handle<GameAppContext> parent, Map<String, String> additionalParams);
     
     
     /**
@@ -51,7 +51,7 @@ public interface GameAppManager
      * 
      * @param       that                    The game app that will be unloaded
      */
-    public void removeGameApp(GameAppContext that);
+    public void removeGameApp(Handle<GameAppContext> that);
     
     
     /**
@@ -62,5 +62,5 @@ public interface GameAppManager
      *                                      network interface belongs to.
      * @return      The local address of the gameapp context.
      */
-    public InetSocketAddress localAddressFor(GameAppContext that);
+    public InetSocketAddress localAddressFor(Handle<GameAppContext> that);
 }

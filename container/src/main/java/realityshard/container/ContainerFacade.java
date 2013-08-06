@@ -5,12 +5,10 @@
 package realityshard.container;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.InetSocketAddress;
 import realityshard.container.gameapp.MetaGameAppContext;
-import java.net.SocketAddress;
 import realityshard.container.gameapp.GameAppManager;
 import realityshard.container.gameapp.GameAppContext;
 import realityshard.container.gameapp.GameAppFactory;
@@ -21,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import realityshard.container.network.GameAppContextKey;
+import realityshard.container.util.Handle;
 
 
 /**
@@ -85,7 +84,7 @@ public final class ContainerFacade implements GameAppManager
      * @return      The game app or null, if creation failed.
      */
     @Override
-    public GameAppContext.Remote createGameApp(String name, GameAppContext.Remote parent, Map<String, String> additionalParams)
+    public Handle<GameAppContext> createGameApp(String name, Handle<GameAppContext> parent, Map<String, String> additionalParams)
     {
         return internalCreateGameApp(name, parent, additionalParams);
     }
@@ -97,13 +96,13 @@ public final class ContainerFacade implements GameAppManager
      * @param       that                    Game app
      */
     @Override
-    public void removeGameApp(GameAppContext that) 
+    public void removeGameApp(Handle<GameAppContext> that) 
     {
-        GameAppInfo gameAppInfo = gameApps.get(that.getName());
+        GameAppInfo gameAppInfo = gameApps.get(that.get().getName());
         
-        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.getName()); return; }
+        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.get().getName()); return; }
         
-        gameAppInfo.MetaContext.shutdown(that);
+        gameAppInfo.MetaContext.shutdown(that.get());
     }   
     
     
@@ -114,11 +113,11 @@ public final class ContainerFacade implements GameAppManager
      * @return      The local address of that game app.
      */
     @Override
-    public InetSocketAddress localAddressFor(GameAppContext that) 
+    public InetSocketAddress localAddressFor(Handle<GameAppContext> that) 
     {
-        GameAppInfo gameAppInfo = gameApps.get(that.getName());
+        GameAppInfo gameAppInfo = gameApps.get(that.get().getName());
         
-        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.getName()); return null; }
+        if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.get().getName()); return null; }
         
         return gameAppInfo.NetworkChannel.localAddress();
     }
@@ -133,7 +132,7 @@ public final class ContainerFacade implements GameAppManager
         {
             if (!gameAppInfo.Factory.isStartup()) { continue; }
 
-            internalCreateGameApp(gameAppInfo.Factory.getName(), gameAppInfo.MetaContext, new HashMap<String, String>());
+            internalCreateGameApp(gameAppInfo.Factory.getName(), null, new HashMap<String, String>());
         }
     }
 
@@ -177,20 +176,20 @@ public final class ContainerFacade implements GameAppManager
     /**
      * Create a new game app, using the factory.
      */
-    private GameAppContext.Remote internalCreateGameApp(String name, GameAppContext.Remote parent, Map<String, String> additionalParams)
+    private Handle<GameAppContext> internalCreateGameApp(String name, Handle<GameAppContext> parent, Map<String, String> additionalParams)
     {
         GameAppInfo gameAppInfo = gameApps.get(name);
         
         if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", name); return null; }
         
         // create the app
-        GameAppContext.Remote newApp = gameAppInfo.Factory.produceGameApp(this, gameAppInfo.MetaContext, additionalParams);
+        Handle<GameAppContext> newApp = gameAppInfo.Factory.produceGameApp(this, parent, additionalParams);
 
         // failcheck
         if (newApp == null) { LOGGER.error("Failed to create game app! [name {} ]", gameAppInfo.Factory.getName()); return null; }
 
         // dont forget to add it to the metacontext
-        gameAppInfo.MetaContext.addContext(newApp);
+        gameAppInfo.MetaContext.addContext(newApp.get());
 
         return newApp;
     }
