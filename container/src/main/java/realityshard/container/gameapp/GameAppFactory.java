@@ -63,5 +63,5 @@ public interface GameAppFactory
      * @param       additionalParams        The additional parameters used for game app creation.
      * @return      The new GameApp if successfull, else null.
      */
-    public Handle<GameAppContext> produceGameApp(GameAppManager manager, Handle<GameAppContext> parent, Map<String, String> additionalParams);
+    public GameAppContext produceGameApp(GameAppManager manager, Handle<GameAppContext> parent, Map<String, String> additionalParams);
 }

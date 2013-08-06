@@ -26,7 +26,7 @@ public class NettyMessageDemuxDecoder extends MessageToMessageDecoder<Message>
         GameAppContext context = ctx.channel().attr(GameAppContextKey.KEY).get();
         
         // and let the context decide what to do with the message
-        context.handle(msg);
+        context.handleMessage(msg);
         
         // we dont break the cycle here - maybe other handlers sit behind this one
         out.add(msg);

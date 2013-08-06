@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import realityshard.container.network.GameAppContextKey;
 import realityshard.container.util.Handle;
+import realityshard.container.util.HandleRegistry;
 
 
 /**
@@ -43,6 +44,7 @@ public final class ContainerFacade implements GameAppManager
     private final static Logger LOGGER = LoggerFactory.getLogger(ContainerFacade.class);
 
     private final Map<String, GameAppInfo> gameApps = new ConcurrentHashMap<>();
+    private final HandleRegistry<GameAppContext> gameAppHandleRegistry = new HandleRegistry<>();
 
 
     /**
@@ -183,14 +185,17 @@ public final class ContainerFacade implements GameAppManager
         if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", name); return null; }
         
         // create the app
-        Handle<GameAppContext> newApp = gameAppInfo.Factory.produceGameApp(this, parent, additionalParams);
+        GameAppContext newApp = gameAppInfo.Factory.produceGameApp(this, parent, additionalParams);
 
         // failcheck
         if (newApp == null) { LOGGER.error("Failed to create game app! [name {} ]", gameAppInfo.Factory.getName()); return null; }
 
+        // register it...
+        Handle<GameAppContext> appHandle = gameAppHandleRegistry.produce(newApp);
+        
         // dont forget to add it to the metacontext
-        gameAppInfo.MetaContext.addContext(newApp.get());
+        gameAppInfo.MetaContext.addContext(newApp);
 
-        return newApp;
+        return appHandle;
     }
 }

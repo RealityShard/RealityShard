@@ -4,8 +4,6 @@
 
 package realityshard.container.gameapp;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import realityshard.container.events.Event;
 import realityshard.container.events.EventAggregator;
 import realityshard.container.network.Message;
@@ -26,7 +24,7 @@ public interface GameAppContext
      * 
      * @param       message 
      */
-    public void handle(Message message);
+    public void handleMessage(Message message);
     
     
     /**
@@ -81,8 +79,6 @@ public interface GameAppContext
     public static class Default implements GameAppContext
     {
 
-        private final static Logger LOGGER = LoggerFactory.getLogger(Default.class);
-
         private EventAggregator aggregator;
         private String name = "";
         private GameAppManager manager;
@@ -107,7 +103,7 @@ public interface GameAppContext
         
 
         @Override
-        public void handle(Message message) 
+        public void handleMessage(Message message) 
         {
             trigger(message);
         }
