@@ -58,10 +58,11 @@ public interface GameAppFactory
     /**
      * Create a new Game-App.
      *
-     * @param       manager                 The manager of this new game app.
-     * @param       parent                  The parent context of the new context (if any)
+     * @param       thisContext             The default context object. You should wrap
+     *                                      whatever features you need around this and use it.
+     * @param       parentContext           The parent context of the new context (if any)
      * @param       additionalParams        The additional parameters used for game app creation.
-     * @return      The new GameApp if successfull, else null.
+     * @return      True if the new GameApp was successfuly initialized, else false.
      */
-    public GameAppContext produceGameApp(GameAppManager manager, Handle<GameAppContext> parent, Map<String, String> additionalParams);
+    public boolean initGameApp(Handle<GameAppContext> thisContext, Handle<GameAppContext> parentContext, Map<String, String> additionalParams);
 }

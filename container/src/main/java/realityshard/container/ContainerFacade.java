@@ -8,7 +8,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.InetSocketAddress;
-import realityshard.container.gameapp.MetaGameAppContext;
 import realityshard.container.gameapp.GameAppManager;
 import realityshard.container.gameapp.GameAppContext;
 import realityshard.container.gameapp.GameAppFactory;
@@ -160,7 +159,6 @@ public final class ContainerFacade implements GameAppManager
     {
         for (Map.Entry<String, GameAppInfo> entry : gameApps.entrySet()) 
         {
-            String string = entry.getKey();
             GameAppInfo gameAppInfo = entry.getValue();
             
             gameAppInfo.MetaContext.shutdown();
@@ -198,18 +196,23 @@ public final class ContainerFacade implements GameAppManager
         
         if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", name); return null; }
         
-        // create the app
-        GameAppContext newApp = gameAppInfo.Factory.produceGameApp(this, parent, additionalParams);
-
-        // failcheck
-        if (newApp == null) { LOGGER.error("Failed to create game app! [name {} ]", gameAppInfo.Factory.getName()); return null; }
-
-        // register it...
-        Handle<GameAppContext> appHandle = gameAppHandleRegistry.produce(newApp);
+        // create the context for the app
+        GameAppContext context = new GameAppContext.Default(name, this, parent);
         
-        // dont forget to add it to the metacontext
-        gameAppInfo.MetaContext.addContext(newApp);
+        // register it
+        Handle<GameAppContext> contextHandle = gameAppHandleRegistry.produce(context);
+        
+        // create the app
+        if (gameAppInfo.Factory.initGameApp(contextHandle, parent, additionalParams))
+        {
+            LOGGER.error("Failed to create game app! [name {} ]", gameAppInfo.Factory.getName());
+            contextHandle.invalidate();
+            return null;
+        }
 
-        return appHandle;
+        // dont forget to add it to the metacontext
+        gameAppInfo.MetaContext.addContext(context);
+
+        return contextHandle;
     }
 }

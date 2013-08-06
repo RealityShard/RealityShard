@@ -4,6 +4,9 @@
 
 package realityshard.container.gameapp;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.UUID;
 import realityshard.container.events.Event;
 import realityshard.container.events.EventAggregator;
 import realityshard.container.network.Message;
@@ -16,7 +19,7 @@ import realityshard.container.util.Handle;
  *
  * @author _rusty
  */
-public interface GameAppContext 
+public interface GameAppContext extends GameAppManager
 {    
 
     /**
@@ -141,6 +144,56 @@ public interface GameAppContext
         public Handle<GameAppContext> getParentContext()
         {
             return parent;
+        }
+
+        
+        /**
+         * Ask the game app manager to do this... 
+         */
+        @Override
+        public boolean canCreateGameApp(String name) 
+        {
+            return manager.canCreateGameApp(name);
+        }
+
+        
+        /**
+         * Ask the game app manager to do this... 
+         */
+        @Override
+        public Handle<GameAppContext> createGameApp(String name, Handle<GameAppContext> parent, Map<String, String> additionalParams) 
+        {
+            return manager.createGameApp(name, parent, additionalParams);
+        }
+
+        
+        /**
+         * Ask the game app manager to do this... 
+         */
+        @Override
+        public Handle<GameAppContext> tryGetGameApp(UUID gameAppUid) 
+        {
+            return manager.tryGetGameApp(gameAppUid);
+        }
+
+        
+        /**
+         * Ask the game app manager to do this... 
+         */
+        @Override
+        public void removeGameApp(Handle<GameAppContext> that) 
+        {
+            manager.removeGameApp(that);
+        }
+
+        
+        /**
+         * Ask the game app manager to do this... 
+         */
+        @Override
+        public InetSocketAddress localAddressFor(Handle<GameAppContext> that) 
+        {
+            return manager.localAddressFor(that);
         }
     }
 }

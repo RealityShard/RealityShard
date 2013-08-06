@@ -2,7 +2,7 @@
  * For copyright information see the LICENSE document.
  */
 
-package realityshard.container.gameapp;
+package realityshard.container;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +12,8 @@ import realityshard.container.events.Event;
 import realityshard.container.events.GameAppCreatedEvent;
 import realityshard.container.events.GameAppUnloadedEvent;
 import realityshard.container.events.NetworkClientConnectedEvent;
+import realityshard.container.gameapp.GameAppContext;
+import realityshard.container.gameapp.GameAppManager;
 
 
 /**
@@ -24,7 +26,7 @@ import realityshard.container.events.NetworkClientConnectedEvent;
  *
  * @author _rusty
  */
-public class MetaGameAppContext extends GameAppContext.Default
+class MetaGameAppContext extends GameAppContext.Default
 {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(MetaGameAppContext.class);
