@@ -15,6 +15,7 @@ import realityshard.container.gameapp.GameAppFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,19 @@ public final class ContainerFacade implements GameAppManager
     public Handle<GameAppContext> createGameApp(String name, Handle<GameAppContext> parent, Map<String, String> additionalParams)
     {
         return internalCreateGameApp(name, parent, additionalParams);
+    }
+    
+    
+    /**
+     * Try get a game app handle by its unique identifier.
+     * 
+     * @param       gameAppUid
+     * @return      The global handle of the game app, or null.
+     */
+    @Override
+    public Handle<GameAppContext> tryGetGameApp(UUID gameAppUid)
+    {
+        return gameAppHandleRegistry.getHandle(gameAppUid);
     }
 
     

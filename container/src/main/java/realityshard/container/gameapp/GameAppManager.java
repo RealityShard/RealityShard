@@ -6,6 +6,7 @@ package realityshard.container.gameapp;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.UUID;
 import realityshard.container.util.Handle;
 
 
@@ -41,6 +42,15 @@ public interface GameAppManager
      * @return      The shardlet context that was created, or null if the creation failed.
      */
     public Handle<GameAppContext> createGameApp(String name, Handle<GameAppContext> parent, Map<String, String> additionalParams);
+    
+    
+    /**
+     * Try get a game app handle by its unique identifier.
+     * 
+     * @param       gameAppUid
+     * @return      The global handle of the game app, or null.
+     */
+    public Handle<GameAppContext> tryGetGameApp(UUID gameAppUid);
     
     
     /**
