@@ -14,6 +14,7 @@ import realityshard.container.events.GameAppUnloadedEvent;
 import realityshard.container.events.NetworkClientConnectedEvent;
 import realityshard.container.gameapp.GameAppContext;
 import realityshard.container.gameapp.GameAppManager;
+import realityshard.container.network.Message;
 
 
 /**
@@ -55,6 +56,22 @@ class MetaGameAppContext extends GameAppContext.Default
         for (GameAppContext context : contexts) 
         {
             context.trigger(event);
+        }
+    }
+    
+    
+    /**
+     * Handles the messages from all unconnected clients,
+     * and distributes it to all sub-contexts
+     * 
+     * @param message 
+     */
+    @Override
+    public void handleMessage(Message message)
+    {
+        for (GameAppContext context : contexts) 
+        {
+            context.handleMessage(message);
         }
     }
 
