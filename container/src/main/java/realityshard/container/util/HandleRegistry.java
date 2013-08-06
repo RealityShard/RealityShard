@@ -37,12 +37,33 @@ public class HandleRegistry<T extends Object>
     /**
      * Factory method.
      * 
+     * Use this to initially get a handle for some kind of data storage object.
+     * 
      * @param       object                  The object that will be wrapped in a handler
      * @return      The new handler.
      */
-    public Handle<T> produce(final T object) 
+    public Handle<T> register(final T object) 
     {
         final UUID uid = UUID.randomUUID();
+        
+        return registerExisting(object, uid);
+    }
+    
+    
+    /**
+     * Factory method.
+     * 
+     * Use this method to register a handle for an object that you already got a
+     * uid for.
+     * Example: Your game app has received a uid and data for some kind of globally
+     * shared object state. Use this to associate that uid with the data locally.
+     *  
+     * @param       object                  The object that will be wrapped in a handler.
+     * @param       uid                     An existing UUID.
+     * @return      The new handler.
+     */
+    public Handle<T> registerExisting(final T object, final UUID uid)
+    {
         final HandleRegistry<T> that = this;
         
         Handle<T> h = new Handle<T>() {
