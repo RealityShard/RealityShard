@@ -115,6 +115,17 @@ public class HandleRegistry<T extends Object>
     {
         return handles.values();
     }
+    
+    
+    /**
+     * Check if there are no handles registered in this registry.
+     * 
+     * @return      True or false depending on the handlecount.
+     */
+    public boolean isEmpty()
+    {
+        return handles.isEmpty();
+    }
 
 
     /**
@@ -123,7 +134,7 @@ public class HandleRegistry<T extends Object>
      * 
      * @param       handle
      */
-    private void remove(Handle<T> handle)
+    protected void remove(Handle<T> handle)
     {
         handles.remove(handle.getUid());
     }
