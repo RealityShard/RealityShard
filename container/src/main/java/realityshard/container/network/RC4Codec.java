@@ -23,7 +23,7 @@ import javax.crypto.spec.SecretKeySpec;
  * 
  * @author _rusty
  */
-public final class NettyRC4Codec 
+public final class RC4Codec 
 {
     
     /**
@@ -31,9 +31,9 @@ public final class NettyRC4Codec
      */
     public static final class Encoder extends MessageToByteEncoder<ByteBuf>
     {
-        private NettyRC4Codec codec;
+        private RC4Codec codec;
         
-        public Encoder(byte[] rc4Key) { codec = new NettyRC4Codec(rc4Key, Mode.ENCRYPT_MODE); }
+        public Encoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Mode.ENCRYPT_MODE); }
 
         @Override
         protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws Exception 
@@ -48,9 +48,9 @@ public final class NettyRC4Codec
      */
     public static final class Decoder extends ByteToMessageDecoder
     {
-        private NettyRC4Codec codec;
+        private RC4Codec codec;
         
-        public Decoder(byte[] rc4Key) { codec = new NettyRC4Codec(rc4Key, Mode.DECRYPT_MODE); }
+        public Decoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Mode.DECRYPT_MODE); }
 
         @Override
         protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception 
@@ -76,7 +76,7 @@ public final class NettyRC4Codec
     private final Cipher rc4Encrypt;
     
     
-    private NettyRC4Codec(byte[] rc4Key, Mode mode)
+    private RC4Codec(byte[] rc4Key, Mode mode)
     {
         try 
         {

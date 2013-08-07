@@ -16,7 +16,7 @@ import realityshard.container.gameapp.GameAppContext;
  * 
  * @author _rusty
  */
-public class NettyMessageDemuxDecoder extends MessageToMessageDecoder<Message>
+public class MessageDemuxDecoder extends MessageToMessageDecoder<Message>
 {
 
     @Override
