@@ -204,7 +204,7 @@ public final class ContainerFacade implements GameAppManager
         Handle<GameAppContext> contextHandle = gameAppHandleRegistry.register(context);
         
         // create the app
-        if (gameAppInfo.Factory.initGameApp(contextHandle, parent, additionalParams))
+        if (!gameAppInfo.Factory.initGameApp(contextHandle, parent, additionalParams))
         {
             LOGGER.error("Failed to create game app! [name {} ]", gameAppInfo.Factory.getName());
             contextHandle.invalidate();
