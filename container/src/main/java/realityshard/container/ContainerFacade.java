@@ -179,7 +179,8 @@ public final class ContainerFacade implements GameAppManager
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(new NioEventLoopGroup())
                  .channel(NioServerSocketChannel.class)
-                 .childAttr(GameAppContextKey.KEY, result.MetaContext);
+                 .childAttr(GameAppContextKey.KEY, result.MetaContext)
+                 .childAttr(GameAppContextKey.IS_SET, false);
         
         result.NetworkChannel = (NioServerSocketChannel) factory.getServerChannel(bootstrap);
         
