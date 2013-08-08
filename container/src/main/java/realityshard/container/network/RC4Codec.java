@@ -33,11 +33,13 @@ public final class RC4Codec
     {
         private RC4Codec codec;
         
-        public Encoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Mode.ENCRYPT_MODE); }
+        public Encoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Cipher.ENCRYPT_MODE); }
 
         @Override
         protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws Exception 
         {
+            if (!msg.isReadable() || !out.isWritable()) { return; }
+            
             codec.encode(ctx, msg, out);
         }
     }
@@ -50,11 +52,13 @@ public final class RC4Codec
     {
         private RC4Codec codec;
         
-        public Decoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Mode.DECRYPT_MODE); }
+        public Decoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Cipher.DECRYPT_MODE); }
 
         @Override
         protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception 
         {
+            if (!msg.isReadable()) { return; }
+            
             ByteBuf outBuf = Unpooled.buffer(msg.readableBytes());
             codec.encode(ctx, msg, outBuf);
             
@@ -62,28 +66,17 @@ public final class RC4Codec
         }
     }
     
-    
-    public enum Mode
-    {
-        ENCRYPT_MODE(1),
-        DECRYPT_MODE(2);
-        
-        private final int id;
-        private Mode(int id) { this.id = id; }
-        public int val() { return id; }
-    }
-    
     private final Cipher rc4Encrypt;
     
     
-    private RC4Codec(byte[] rc4Key, Mode mode)
+    private RC4Codec(byte[] rc4Key, int mode)
     {
         try 
         {
             SecretKeySpec rc4KeySpec = new SecretKeySpec(rc4Key, "RC4");
 
             this.rc4Encrypt = Cipher.getInstance("RC4");
-            this.rc4Encrypt.init(mode.val(), rc4KeySpec);
+            this.rc4Encrypt.init(mode, rc4KeySpec);
 
         } 
         catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) 

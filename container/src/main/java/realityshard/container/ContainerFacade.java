@@ -5,6 +5,7 @@
 package realityshard.container;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.net.InetSocketAddress;
@@ -37,6 +38,8 @@ public final class ContainerFacade implements GameAppManager
     {
         public GameAppFactory Factory;
         public MetaGameAppContext MetaContext;
+        public NioEventLoopGroup Boss;
+        public NioEventLoopGroup Worker;
         public NioServerSocketChannel NetworkChannel;
     }
 
@@ -176,8 +179,14 @@ public final class ContainerFacade implements GameAppManager
         result.Factory = factory;
         result.MetaContext = new MetaGameAppContext(factory.getName(), this);
         
+        // register the metacontext with its own aggregator
+        result.MetaContext.getEventAggregator().register(result.MetaContext);
+        
+        result.Boss = new NioEventLoopGroup();
+        result.Worker = new NioEventLoopGroup();
+        
         ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(new NioEventLoopGroup())
+        bootstrap.group(result.Boss, result.Worker)
                  .channel(NioServerSocketChannel.class)
                  .childAttr(GameAppContextKey.KEY, result.MetaContext)
                  .childAttr(GameAppContextKey.IS_SET, false);

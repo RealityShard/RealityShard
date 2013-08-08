@@ -40,7 +40,7 @@ class MetaGameAppContext extends GameAppContext.Default
      */
     public MetaGameAppContext(String name, GameAppManager manager)
     {
-        super(name, manager, null);
+        super(name, manager, null);        
         contexts = new HashSet<>();
     }
     
