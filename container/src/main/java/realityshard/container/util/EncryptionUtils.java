@@ -62,6 +62,16 @@ public class EncryptionUtils
 		// END Diffie-Hellman
 		return sharedKeyBytes;
 	}
+        
+        
+        public static byte[] generateServerPublicKey()
+        {
+            BigInteger pubKey = BigInteger.valueOf(4).modPow(SERVER_PRIVATE_KEY, PRIME);
+            byte[] pubKeyBytes = getBytesFromBigInteger(pubKey);
+            LOG.debug("Public key: {} ({} bytes)", pubKey, pubKeyBytes.length);
+            
+            return pubKeyBytes;
+        }
 	
         
 	// TODO: write JUnit tests for these sets given by ACB:
