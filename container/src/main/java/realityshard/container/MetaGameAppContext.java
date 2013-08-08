@@ -27,7 +27,7 @@ import realityshard.container.network.Message;
  *
  * @author _rusty
  */
-class MetaGameAppContext extends GameAppContext.Default
+public class MetaGameAppContext extends GameAppContext.Default
 {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(MetaGameAppContext.class);
