@@ -15,6 +15,8 @@ import java.util.List;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -31,6 +33,7 @@ public final class RC4Codec
      */
     public static final class Encoder extends MessageToByteEncoder<ByteBuf>
     {
+        private final Logger LOGGER = LoggerFactory.getLogger(Encoder.class);
         private RC4Codec codec;
         
         public Encoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Cipher.ENCRYPT_MODE); }
@@ -38,7 +41,9 @@ public final class RC4Codec
         @Override
         protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws Exception 
         {
-            if (!msg.isReadable() || !out.isWritable()) { return; }
+            if (!msg.isReadable()) { return; }
+            
+            LOGGER.debug("Decoded message.");
             
             codec.encode(ctx, msg, out);
         }
@@ -50,6 +55,7 @@ public final class RC4Codec
      */
     public static final class Decoder extends ByteToMessageDecoder
     {
+        private final Logger LOGGER = LoggerFactory.getLogger(Decoder.class);
         private RC4Codec codec;
         
         public Decoder(byte[] rc4Key) { codec = new RC4Codec(rc4Key, Cipher.DECRYPT_MODE); }
@@ -62,9 +68,12 @@ public final class RC4Codec
             ByteBuf outBuf = Unpooled.buffer(msg.readableBytes());
             codec.encode(ctx, msg, outBuf);
             
+            LOGGER.debug("Decoded message.");
+            
             out.add(outBuf);
         }
     }
+    
     
     private final Cipher rc4Encrypt;
     
@@ -92,7 +101,7 @@ public final class RC4Codec
         in.readBytes(dataToBeEncrypted);
 
         byte[] encryptedBytes = this.rc4Encrypt.update(dataToBeEncrypted);
-
+        
         out.writeBytes(encryptedBytes);
     }
 }

@@ -46,21 +46,6 @@ public class MetaGameAppContext extends GameAppContext.Default
     
     
     /**
-     * Handles the new client event and distributes it to all sub-contexts
-     * 
-     * @param event 
-     */
-    @Event.Handler
-    public void onNewClient(NetworkClientConnectedEvent event)
-    {
-        for (GameAppContext context : contexts) 
-        {
-            context.trigger(event);
-        }
-    }
-    
-    
-    /**
      * Handles the messages from all unconnected clients,
      * and distributes it to all sub-contexts
      * 
@@ -72,6 +57,22 @@ public class MetaGameAppContext extends GameAppContext.Default
         for (GameAppContext context : contexts) 
         {
             context.handleMessage(message);
+        }
+    }
+    
+    
+    /**
+     * Handles the event from all unconnected clients,
+     * and distributes it to all sub-contexts
+     * 
+     * @param event 
+     */
+    @Override
+    public void trigger(Event event)
+    {
+        for (GameAppContext context : contexts) 
+        {
+            context.trigger(event);
         }
     }
 

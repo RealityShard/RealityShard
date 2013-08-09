@@ -75,6 +75,16 @@ public class HandleRegistry<T extends Object>
 
             @Override
             public void invalidate() { that.remove(this); }
+            
+            @Override
+            public int hashCode() { return uid.hashCode(); }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) { return false; }
+                if (getClass() != obj.getClass()) { return false; }
+                return uid.equals(((Handle<T>) obj).getUid());
+            }
         };
                 
         handles.put(h.getUid(), h);

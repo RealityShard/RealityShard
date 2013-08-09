@@ -8,7 +8,11 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import realityshard.container.gameapp.GameAppManager;
 import realityshard.container.gameapp.GameAppContext;
 import realityshard.container.gameapp.GameAppFactory;
@@ -49,6 +53,7 @@ public final class ContainerFacade implements GameAppManager
     private final Map<String, GameAppInfo> gameApps = new ConcurrentHashMap<>();
     private final HandleRegistry<GameAppContext> gameAppHandleRegistry = new HandleRegistry<>();
 
+    private InetAddress localAddress = null;
 
     /**
      * Constructor.
@@ -64,6 +69,26 @@ public final class ContainerFacade implements GameAppManager
 
         // now start up all start-up apps
         startUpApps();
+        
+        // try to get the local ip
+        // TODO: use a better method ;)
+        Enumeration<NetworkInterface> netIfaces = NetworkInterface.getNetworkInterfaces();
+        while (netIfaces.hasMoreElements()) 
+        {
+            NetworkInterface cur = netIfaces.nextElement();
+            if (!cur.isUp() || cur.isLoopback() || cur.isVirtual()) { continue; }
+            
+            Enumeration<InetAddress> addr = cur.getInetAddresses();
+            while (addr.hasMoreElements())
+            {
+                InetAddress curAddr = addr.nextElement();
+                if (curAddr instanceof Inet4Address)
+                {
+                    localAddress = curAddr;
+                    return;
+                }
+            }
+        }
     }
 
     
@@ -137,7 +162,16 @@ public final class ContainerFacade implements GameAppManager
         
         if (gameAppInfo == null) { LOGGER.error("Game app doesnt exist! [name {} ]", that.get().getName()); return null; }
         
-        return gameAppInfo.NetworkChannel.localAddress();
+        int port = gameAppInfo.NetworkChannel.localAddress().getPort();
+        
+        // always return the address of this server...
+        // the parameter is important when we do remoting
+        if (localAddress == null) 
+        { 
+            return new InetSocketAddress(Inet4Address.getLoopbackAddress(), port);
+        }
+        
+        return new InetSocketAddress(localAddress, port);
     }
     
 
@@ -189,7 +223,8 @@ public final class ContainerFacade implements GameAppManager
         bootstrap.group(result.Boss, result.Worker)
                  .channel(NioServerSocketChannel.class)
                  .childAttr(GameAppContextKey.KEY, result.MetaContext)
-                 .childAttr(GameAppContextKey.IS_SET, false);
+                 .childAttr(GameAppContextKey.IS_SET, false)
+                 .option(ChannelOption.SO_BACKLOG, 1000);
         
         result.NetworkChannel = (NioServerSocketChannel) factory.getServerChannel(bootstrap);
         
