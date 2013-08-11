@@ -43,7 +43,7 @@ public final class RC4Codec
         {
             if (!msg.isReadable()) { return; }
             
-            LOGGER.debug("Decoded message.");
+            LOGGER.debug("Encoded message.");
             
             codec.encode(ctx, msg, out);
         }
