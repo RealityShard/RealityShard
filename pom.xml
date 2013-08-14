@@ -3,14 +3,12 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.realityshard</groupId>
-    <artifactId>realityshard</artifactId>
-    <version>0.2.3</version>
-
-    <packaging>pom</packaging>
+    <artifactId>container</artifactId>
+    <version>0.3.0</version>
 
     <name>${project.artifactId}</name>
-    <description>The Reality:Shard main java source code.</description>
-    <url>https://github.com/RealityShard/Shardlet</url>
+    <description>The Reality:Shard's container java source.</description>
+    <url>https://github.com/RealityShard/</url>
     <inceptionYear>2012</inceptionYear>
 
 
@@ -24,14 +22,20 @@
     </properties>
 
 
-    <modules>
-        <module>shardlet</module>
-        <module>network</module>
-        <module>container</module>
-    </modules>
-
-
     <dependencies>
+    	 <!-- The Network API -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.0.3.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.1</version>
+            <type>jar</type>
+        </dependency>
+    	
         <!-- JUnit for testing -->
         <dependency>
             <groupId>junit</groupId>
