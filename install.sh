@@ -8,8 +8,7 @@
 # This can be used to install Reality:Shard.
 # ...ON A LINUX / UNIX SYSTEM!
 #
-# To execute this and the server, you will need to have the following tools installed:
-# - GIT
+# To use this framework, you will need to have the following tools installed:
 # - Java 7 (JRE/JDK 1.7)
 # - Maven 3
 
@@ -37,20 +36,11 @@ echo ""
 
 
 echo "Checking installed tools..."
-command -v git >/dev/null 2>&1 || { echo >&2 "Failed to find git. Did you install it correctly?"; exit 1; }
 command -v mvn >/dev/null 2>&1 || { echo >&2 "Failed to find maven. Did you install it correctly?"; exit 1; }
 echo ""
 
 
-echo "Checking if you cloned the repo..."
-if [ ! -d "$DIR/.git" ]; then
-    echo "Failed to find the repo. Did you actually clone the git repo? A simple download wont work."
-    exit 1
-fi
-echo ""
-
-
-echo "Installing the submodules..."
+echo "Installing the framework..."
 read -p "[Press any key to continue]" -n 1 -s
 echo ""
 mvn clean install
@@ -63,5 +53,5 @@ echo ""
 echo "If there were any errors during init/update/install of the this,"
 echo "please report them on https://github.com/RealityShard/RealityShard ."
 echo ""
-echo "You can now use RealityShard like any other maven dependecy in your project."
+echo "You can now use RealityShard like any other maven dependency in your project."
 echo "-----------------------------------------------------------------------------"
